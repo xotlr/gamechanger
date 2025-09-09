@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronDown, ChevronUp, Trophy, Users, Heart, Clock, Gamepad2, Zap } from "lucide-react"
 
 // Audio-Hook für verschiedene Formate
-const useAudio = (path: unknown) => {
+const useAudio = (path: string) => {
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   
   useEffect(() => {
@@ -109,7 +109,7 @@ export default function AboutSection() {
   const [glitchActive, setGlitchActive] = useState(false)
   const [showSecret, setShowSecret] = useState(false)
   const secretCodeRef = useRef<string[]>([])
-  const secretCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a']
+  const secretCode = useMemo(() => ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'], [])
   
   // Sound-Hooks
   const hoverSound = useAudio('/sounds/hover.wav')
@@ -131,7 +131,7 @@ export default function AboutSection() {
     }, 5000)
     
     return () => clearInterval(glitchInterval)
-  }, [])
+  }, [glitchSound])
 
   // Konami-Code-Detektor
   useEffect(() => {
@@ -160,7 +160,7 @@ export default function AboutSection() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [showSecret, secretSound])
+  }, [showSecret, secretCode, secretSound])
 
   return (
     <section className="py-20 relative" id="about">
@@ -190,7 +190,7 @@ export default function AboutSection() {
           {/* Hauptbeschreibungsbox im Balatro-Stil */}
           <div className="bg-[#0a0a14] p-5 border border-[#2196f3]/30 relative">
             <p className="text-lg max-w-3xl mx-auto mb-3">
-              Der gemeinnützige Verein "GAME:changer", entstand erst im April 2024 durch die beiden Vereinsgründer David
+              Der gemeinnützige Verein &ldquo;GAME:changer&rdquo;, entstand erst im April 2024 durch die beiden Vereinsgründer David
               Brandhuber und Michael Wojnar. Den Vereinsvorstand freut es besonders, dass bereits viele Mitglieder seit
               Gründung rekrutiert werden konnten und allgemein viel Zuspruch und Begeisterung für diesen jungen Verein
               gewonnen werden konnte.
@@ -293,7 +293,7 @@ export default function AboutSection() {
         >
           <p className="text-lg max-w-3xl mx-auto">
             Die GAME:changer widmen sich der Förderung des eSports in unserer Region. Der Vereinssitz ist in Pleissing
-            und bezweckt gesellige Zusammenkünfte unter "Gleichgesinnten". Weiters werden Turniere und Wettkämpfe
+            und bezweckt gesellige Zusammenkünfte unter &ldquo;Gleichgesinnten&rdquo;. Weiters werden Turniere und Wettkämpfe
             ausgetragen - welche vorwiegend Online via Multiplayer-Modus oder im Old-School-Setting einer klassischen
             LAN-Party gespielt werden.
           </p>
@@ -428,7 +428,7 @@ export default function AboutSection() {
               </div>
               
               <div className="mt-4 text-center">
-                <p className="text-[#2196f3] mb-3">Nutze den Code "KONAMI2024" für einen speziellen Bonus bei deinem Beitritt!</p>
+                <p className="text-[#2196f3] mb-3">Nutze den Code &ldquo;KONAMI2024&rdquo; für einen speziellen Bonus bei deinem Beitritt!</p>
                 <button 
                   className="bg-[#0f111a] border-2 border-[#ff0057] px-6 py-2 text-white hover:bg-[#ff0057]/10 transition-colors"
                   onClick={() => {

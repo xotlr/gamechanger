@@ -252,7 +252,7 @@ function CSSCRTEffects() {
 
 export default function CRTEffect() {
   const canvasRef = useRef<HTMLDivElement>(null);
-  const [isMounted, setIsMounted] = useState(false);
+  const [, setIsMounted] = useState(false);
   
   // Nach dem Mounting das pointer-events: none anwenden
   useEffect(() => {

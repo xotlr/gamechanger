@@ -130,7 +130,7 @@ class AudioManager {
     }
   }
   
-  private loadSound(name: string, path: string): void {
+  private loadSound(name: string): void {
     if (typeof window === 'undefined') return;
     try {
       const audio = new Audio();

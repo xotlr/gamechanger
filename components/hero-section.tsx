@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowDown } from "lucide-react"
 
 export default function HeroSection() {
   const textRef = useRef<HTMLHeadingElement>(null)
@@ -36,13 +35,6 @@ export default function HeroSection() {
     }
   }, []);
 
-  // Zum nächsten Abschnitt scrollen
-  const scrollToNextSection = () => {
-    const nextSection = document.getElementById('about')
-    if (nextSection) {
-      nextSection.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
 
   return (
     <section 
@@ -136,7 +128,7 @@ export default function HeroSection() {
           transition={{ delay: 0.3, duration: 0.5 }}
         >
           <p className="text-xl md:text-2xl crt-text-blue">
-            Wir sind ein gemeinnütziger Verein, um gesellige Zusammenkünfte mit "gleichgesinnten" rund ums Thema eSport zu forcieren
+            Wir sind ein gemeinnütziger Verein, um gesellige Zusammenkünfte mit &ldquo;gleichgesinnten&rdquo; rund ums Thema eSport zu forcieren
           </p>
           
           {/* Pixelecken für Balatro-Stil */}

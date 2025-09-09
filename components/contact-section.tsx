@@ -56,7 +56,7 @@ export default function ContactSection() {
               Mitglied werden
             </h2>
             <p className="text-lg max-w-3xl mx-auto crt-text">
-              Wir "GAME:changer" stehen für eine inklusive und diverse eSports-Community. Unsere kollektiven Ziele sind
+              Wir &ldquo;GAME:changer&rdquo; stehen für eine inklusive und diverse eSports-Community. Unsere kollektiven Ziele sind
               Soziale Integration, Talente fördern und soziale Gemeinschaften stärken. Mit unserem Konzept zur Förderung
               von eSports entgegnen wir soziale, wirtschaftliche und technologische Herausforderungen, woraus wir
               gleichzeitig Chancen schaffen.
@@ -184,7 +184,7 @@ export default function ContactSection() {
             <p>
               Für den Inhalt verantwortlich: David Brandhuber, Michael Wojnar
               <br />
-              lllustration: Iris Brandhuber
+              Illustration: Iris Brandhuber
             </p>
 
             <p>

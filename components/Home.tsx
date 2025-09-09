@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ArrowRight, Facebook, Menu, X, ChevronUp, Info, Users, Target, Gamepad2, Award } from 'lucide-react';
 import CRTEffect from '@/components/crt-effect';
 
@@ -8,9 +8,6 @@ const Home: React.FC = () => {
   // State management
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
-  const [isTypingComplete, setIsTypingComplete] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('');
   
   // Character data for team members
@@ -82,22 +79,9 @@ const Home: React.FC = () => {
     }
   ];
   
-  // Mount check to prevent hydration errors
-  useEffect(() => {
-    setIsMounted(true);
-    
-    // Start typing animation after a shorter delay for better UX
-    const timer = setTimeout(() => {
-      setIsTypingComplete(true);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, []);
 
   // Scroll effects - optimized with useCallback
   const handleScroll = useCallback(() => {
-    // Update scroll position for header effects
-    setScrollY(window.scrollY);
     
     // Show/hide scroll-to-top button with smoother threshold
     if (window.scrollY > 300) {

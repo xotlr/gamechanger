@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import Image from "next/image"
 
 // Teammitglieder-Daten
 const teamMembers = [
@@ -64,7 +63,7 @@ const teamMembers = [
 ]
 
 // Audio-Manager für verschiedene Formate
-const useAudio = (path) => {
+const useAudio = (path: string) => {
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   
   useEffect(() => {
@@ -111,7 +110,6 @@ export default function TeamSection() {
   const selectorRef = useRef<HTMLDivElement>(null)
   
   // Sound-Hooks mit verschiedenen Formaten
-  const selectSound = useAudio('/sounds/select.wav');
   const confirmSound = useAudio('/sounds/confirm.wav');
   const hoverSound = useAudio('/sounds/hover.wav');
 
@@ -177,7 +175,7 @@ export default function TeamSection() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [highlightedMember, showDetails, hoverSound])
+  }, [highlightedMember, showDetails, hoverSound, selectMember])
 
   // Scrollt zum ausgewählten Mitglied
   useEffect(() => {
@@ -197,11 +195,11 @@ export default function TeamSection() {
   }, [highlightedMember])
 
   // Teammitglied auswählen
-  const selectMember = (index: number) => {
+  const selectMember = useCallback((index: number) => {
     setSelectedMember(index)
     setShowDetails(true)
     confirmSound.play();
-  }
+  }, [confirmSound])
 
   return (
     <section className="py-20 relative" id="team">
@@ -397,10 +395,6 @@ export default function TeamSection() {
                 onClick={() => setShowDetails(false)} 
                 className="absolute right-4 top-4 text-[#ff0057] hover:text-white px-2 py-1 border border-[#ff0057]/30 hover:border-[#ff0057] transition-colors text-sm flex items-center"
                 onMouseEnter={() => hoverSound.play()}
-                onClick={() => {
-                  setShowDetails(false);
-                  selectSound.play();
-                }}
               >
                 <span className="mr-1">ESC</span>
                 ZURÜCK
@@ -509,10 +503,6 @@ export default function TeamSection() {
                       onClick={() => setShowDetails(false)}
                       className="crt-button button-hover-effect px-8 py-3 bg-[#0f111a] border-2 border-[#ff0057] text-white relative overflow-hidden group"
                       onMouseEnter={() => hoverSound.play()}
-                      onClick={() => {
-                        setShowDetails(false);
-                        selectSound.play();
-                      }}
                     >
                       <span className="relative z-10">CHARAKTER AUSWÄHLEN</span>
                       
