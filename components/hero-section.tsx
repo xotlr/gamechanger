@@ -147,7 +147,6 @@ export default function HeroSection() {
           transition={{ delay: 0.6, duration: 0.5 }}
         >
           <Button 
-            href="#member" 
             className="crt-button relative overflow-hidden w-full sm:w-auto sm:px-8 group"
             asChild
           >
