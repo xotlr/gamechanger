@@ -7,28 +7,66 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Facebook, Mail, MapPin } from "lucide-react"
+import { NetworkIcon, MailIcon, LandmarkIcon } from "raster-react"
 
 export default function ContactSection() {
   const [formStatus, setFormStatus] = useState<"idle" | "submitting" | "success" | "error">("idle")
+  const [errorMessage, setErrorMessage] = useState<string>("")
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setFormStatus("submitting")
 
-    // Simulate form submission
-    setTimeout(() => {
-      setFormStatus("success")
+    const form = e.target as HTMLFormElement
+    const formData = new FormData(form)
+    
+    const data = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      message: formData.get('message') as string,
+    }
 
-      // Reset form after success
-      const form = e.target as HTMLFormElement
-      form.reset()
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
 
+      const result = await response.json()
+
+      if (response.ok) {
+        setFormStatus("success")
+        form.reset()
+
+        // Reset status after a delay
+        setTimeout(() => {
+          setFormStatus("idle")
+        }, 3000)
+      } else {
+        console.error('Error:', result.error)
+        setFormStatus("error")
+        setErrorMessage(result.error || 'Unbekannter Fehler')
+        
+        // Reset status after a delay
+        setTimeout(() => {
+          setFormStatus("idle")
+          setErrorMessage("")
+        }, 5000)
+      }
+    } catch (error) {
+      console.error('Network error:', error)
+      setFormStatus("error")
+      setErrorMessage('Netzwerkfehler. Bitte versuchen Sie es später erneut.')
+      
       // Reset status after a delay
       setTimeout(() => {
         setFormStatus("idle")
-      }, 3000)
-    }, 1500)
+        setErrorMessage("")
+      }, 5000)
+    }
   }
 
   // Function to get button text with CRT flicker effect
@@ -42,7 +80,7 @@ export default function ContactSection() {
 
   return (
     <>
-      <section className="py-20 relative" id="member">
+      <section className="py-20 relative z-[10000]" id="member">
         
         <div className="max-w-5xl mx-auto px-4">
           <motion.div
@@ -52,8 +90,8 @@ export default function ContactSection() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 glitch-text" data-text="Mitglied werden">
-              Mitglied werden
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 glitch-text" data-text="MITGLIED WERDEN">
+              MITGLIED WERDEN
             </h2>
             <p className="text-lg max-w-3xl mx-auto crt-text">
               Wir &ldquo;GAME:changer&rdquo; stehen für eine inklusive und diverse eSports-Community. Unsere kollektiven Ziele sind
@@ -69,10 +107,10 @@ export default function ContactSection() {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
-              className="balatro-card p-6"
+              className="balatro-card p-6 relative z-[10001]"
             >
-              <h3 className="text-2xl font-bold mb-6 crt-text-red">Kontaktiere uns</h3>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <h3 className="text-2xl font-bold mb-6 glitch-text" data-text="KONTAKTIERE UNS">KONTAKTIERE UNS</h3>
+              <form onSubmit={handleSubmit} className="space-y-6 relative z-[10003]" style={{ position: 'relative', zIndex: 10003 }}>
                 <div className="space-y-2">
                   <label htmlFor="name" className="block text-sm">
                     Name
@@ -81,7 +119,8 @@ export default function ContactSection() {
                     id="name"
                     name="name"
                     required
-                    className="bg-black/30 border-[#ff0057] focus:border-[#ff0057]"
+                    className="bg-black/30 border-[#ff0057] focus:border-[#ff0057] relative z-[10002]"
+                    style={{ position: 'relative', zIndex: 10002 }}
                   />
                 </div>
 
@@ -94,7 +133,8 @@ export default function ContactSection() {
                     name="email"
                     type="email"
                     required
-                    className="bg-black/30 border-[#ff0057] focus:border-[#ff0057]"
+                    className="bg-black/30 border-[#ff0057] focus:border-[#ff0057] relative z-[10002]"
+                    style={{ position: 'relative', zIndex: 10002 }}
                   />
                 </div>
 
@@ -107,19 +147,35 @@ export default function ContactSection() {
                     name="message"
                     rows={5}
                     required
-                    className="bg-black/30 border-[#ff0057] focus:border-[#ff0057]"
+                    className="bg-black/30 border-[#ff0057] focus:border-[#ff0057] relative z-[10002]"
+                    style={{ position: 'relative', zIndex: 10002 }}
                   />
                 </div>
 
                 <Button
                   type="submit"
-                  className={`w-full crt-button button-hover-effect ${formStatus === "success" ? "bg-[#2196f3]" : ""}`}
+                  className={`w-full crt-button button-hover-effect relative z-[10002] ${formStatus === "success" ? "bg-[#2196f3]" : ""} ${formStatus === "error" ? "bg-red-600" : ""}`}
+                  style={{ position: 'relative', zIndex: 10002 }}
                   disabled={formStatus === "submitting"}
                 >
                   <span className={formStatus === "submitting" ? "crt-flicker" : ""}>
                     {getButtonText()}
                   </span>
                 </Button>
+                
+                {/* Error Message */}
+                {formStatus === "error" && errorMessage && (
+                  <div className="mt-4 p-3 bg-red-900/20 border border-red-500/50 rounded">
+                    <p className="text-red-400 text-sm">{errorMessage}</p>
+                  </div>
+                )}
+                
+                {/* Success Message */}
+                {formStatus === "success" && (
+                  <div className="mt-4 p-3 bg-green-900/20 border border-green-500/50 rounded">
+                    <p className="text-green-400 text-sm">Ihre Nachricht wurde erfolgreich gesendet! Wir melden uns bald bei Ihnen.</p>
+                  </div>
+                )}
               </form>
             </motion.div>
 
@@ -131,18 +187,36 @@ export default function ContactSection() {
               className="space-y-8"
             >
               <div className="balatro-card p-6">
-                <h3 className="text-2xl font-bold mb-6 crt-text-blue">Kontaktinformationen</h3>
+                <h3 className="text-2xl font-bold mb-6 glitch-text" data-text="KONTAKTINFORMATIONEN">KONTAKTINFORMATIONEN</h3>
                 <ul className="space-y-4">
                   <li className="flex items-start">
-                    <Mail className="h-6 w-6 mr-3 text-[#ff0057] flex-shrink-0 mt-0.5" />
+                    <MailIcon 
+                      size={20} 
+                      strokeWidth={1} 
+                      radius={1}
+                      className="mr-3 flex-shrink-0 mt-0.5" 
+                      style={{ color: "#ff0057" }}
+                    />
                     <span className="crt-text">verein.gamechanger@gmail.com</span>
                   </li>
                   <li className="flex items-start">
-                    <MapPin className="h-6 w-6 mr-3 text-[#2196f3] flex-shrink-0 mt-0.5" />
+                    <LandmarkIcon 
+                      size={20} 
+                      strokeWidth={1} 
+                      radius={1}
+                      className="mr-3 flex-shrink-0 mt-0.5" 
+                      style={{ color: "#2196f3" }}
+                    />
                     <span className="crt-text">Pleissing, Niederösterreich, Austria</span>
                   </li>
                   <li className="flex items-start">
-                    <Facebook className="h-6 w-6 mr-3 text-[#ff0057] flex-shrink-0 mt-0.5" />
+                    <NetworkIcon 
+                      size={20} 
+                      strokeWidth={1} 
+                      radius={1}
+                      className="mr-3 flex-shrink-0 mt-0.5" 
+                      style={{ color: "#ff0057" }}
+                    />
                     <a
                       href="https://www.facebook.com/profile.php?id=61565503147498"
                       target="_blank"
@@ -156,7 +230,7 @@ export default function ContactSection() {
               </div>
 
               <div className="balatro-card p-6">
-                <h3 className="text-xl font-bold mb-4 crt-text-red">Über den Verein</h3>
+                <h3 className="text-xl font-bold mb-4 glitch-text" data-text="ÜBER DEN VEREIN">ÜBER DEN VEREIN</h3>
                 <p className="crt-text">
                   Unser gemeinnütziger Verein, dessen Tätigkeit nicht auf Gewinn gerichtet ist, bezweckt gesellige
                   Zusammenkünfte um (vorwiegend Online via Multiplayer-Modus) mit und/oder gegeneinander, auf
@@ -167,11 +241,26 @@ export default function ContactSection() {
             </motion.div>
           </div>
         </div>
+        
+        {/* CSS to ensure form inputs are clickable */}
+        <style jsx>{`
+          form input,
+          form textarea,
+          form button {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 10003;
+          }
+          
+          .balatro-card {
+            pointer-events: auto !important;
+          }
+        `}</style>
       </section>
 
       <section className="py-12 border-t border-[#ff0057]/30" id="impressum">
         <div className="max-w-5xl mx-auto px-4">
-          <h2 className="text-2xl font-bold mb-6 crt-text-blue">Impressum</h2>
+          <h2 className="text-2xl font-bold mb-6 glitch-text" data-text="IMPRESSUM">IMPRESSUM</h2>
           <div className="space-y-4 crt-text">
             <p>
               GAME:changer

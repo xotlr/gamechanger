@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useWebAudio } from "@/lib/audio-manager"
 
 // Teammitglieder-Daten
 const teamMembers = [
@@ -62,45 +63,6 @@ const teamMembers = [
   },
 ]
 
-// Audio-Manager für verschiedene Formate
-const useAudio = (path: string) => {
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
-  
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    // Versuchen ein Audio-Element zu erstellen
-    try {
-      // Prüfen welches Format unterstützt wird
-      const audioTest = new Audio();
-      
-      // Prüfe ob OGG unterstützt wird
-      if (audioTest.canPlayType('audio/ogg')) {
-        setAudio(new Audio(`${path.replace('.wav', '.ogg')}`));
-      } 
-      // Prüfe ob MP3 unterstützt wird
-      else if (audioTest.canPlayType('audio/mpeg')) {
-        setAudio(new Audio(`${path.replace('.wav', '.mp3')}`));
-      }
-      // Fallback zu WAV
-      else {
-        setAudio(new Audio(path));
-      }
-    } catch (e) {
-      console.error("Audio konnte nicht geladen werden:", e);
-    }
-  }, [path]);
-  
-  const play = () => {
-    if (audio) {
-      audio.volume = 0.2;
-      audio.currentTime = 0;
-      audio.play().catch(e => console.log("Audio-Wiedergabe nicht möglich:", e));
-    }
-  }
-  
-  return { play };
-}
 
 export default function TeamSection() {
   const [selectedMember, setSelectedMember] = useState<number | null>(null)
@@ -109,9 +71,15 @@ export default function TeamSection() {
   const [glitchActive, setGlitchActive] = useState(false)
   const selectorRef = useRef<HTMLDivElement>(null)
   
-  // Sound-Hooks mit verschiedenen Formaten
-  const confirmSound = useAudio('/sounds/confirm.wav');
-  const hoverSound = useAudio('/sounds/hover.wav');
+  // Web Audio hooks
+  const { playHover, playConfirm } = useWebAudio()
+
+  // Teammitglied auswählen - define before useEffect that uses it
+  const selectMember = useCallback((index: number) => {
+    setSelectedMember(index)
+    setShowDetails(true)
+    playConfirm();
+  }, [playConfirm])
 
   // Gelegentlicher Glitch-Effekt
   useEffect(() => {
@@ -134,28 +102,28 @@ export default function TeamSection() {
           case 'ArrowRight':
             setHighlightedMember(prev => {
               const newIndex = prev === null ? 0 : Math.min((prev + 1), teamMembers.length - 1)
-              hoverSound.play();
+              playHover();
               return newIndex
             })
             break
           case 'ArrowLeft':
             setHighlightedMember(prev => {
               const newIndex = prev === null ? 0 : Math.max((prev - 1), 0)
-              hoverSound.play();
+              playHover();
               return newIndex
             })
             break
           case 'ArrowUp':
             setHighlightedMember(prev => {
               const newIndex = prev === null ? 0 : Math.max((prev - 3), 0)
-              hoverSound.play();
+              playHover();
               return newIndex
             })
             break
           case 'ArrowDown':
             setHighlightedMember(prev => {
               const newIndex = prev === null ? 0 : Math.min((prev + 3), teamMembers.length - 1)
-              hoverSound.play();
+              playHover();
               return newIndex
             })
             break
@@ -175,7 +143,7 @@ export default function TeamSection() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [highlightedMember, showDetails, hoverSound, selectMember])
+  }, [highlightedMember, showDetails, playHover, selectMember])
 
   // Scrollt zum ausgewählten Mitglied
   useEffect(() => {
@@ -194,39 +162,26 @@ export default function TeamSection() {
     }
   }, [highlightedMember])
 
-  // Teammitglied auswählen
-  const selectMember = useCallback((index: number) => {
-    setSelectedMember(index)
-    setShowDetails(true)
-    confirmSound.play();
-  }, [confirmSound])
 
   return (
-    <section className="py-20 relative" id="team">
+    <section className="py-12 sm:py-16 md:py-20 relative" id="team">
       {/* CRT-Scan-Line-Effekt */}
       {glitchActive && <div className="scan-line"></div>}
       
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4">
         {/* Abschnitts-Titel mit gelegentlichem Glitch */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-12 sm:mb-14 md:mb-16"
         >
-          <h2 
-            className={`text-3xl md:text-4xl font-bold mb-6 ${glitchActive ? 'opacity-90' : ''}`}
-            style={{
-              textShadow: glitchActive 
-                ? "2px 0 #ff0057, -2px 0 #2196f3"
-                : "0 0 10px rgba(255, 0, 87, 0.6), 0 0 20px rgba(33, 150, 243, 0.3)"
-            }}
-          >
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 glitch-text" data-text="CHARAKTERAUSWAHL">
             CHARAKTERAUSWAHL
           </h2>
-          <div className="max-w-3xl mx-auto bg-[#0a0a14] p-4 border border-[#2196f3]/30 relative">
-            <p className="text-lg crt-text">
+          <div className="max-w-3xl mx-auto bg-[#0a0a14] p-3 sm:p-4 border border-[#2196f3]/30 relative">
+            <p className="text-base sm:text-lg crt-text">
               Wähle ein Teammitglied, um mehr über seine Fähigkeiten und Spezialitäten zu erfahren. Jedes Mitglied bringt einzigartige Talente in unser eSport-Team ein.
             </p>
             
@@ -237,17 +192,18 @@ export default function TeamSection() {
             <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-[#ff0057]"></div>
           </div>
           
-          <p className="text-sm mt-4 crt-text-blue">
-            STEUERUNG: ← → ↑ ↓ zum Navigieren, ENTER zum Auswählen
+          <p className="text-xs sm:text-sm mt-3 sm:mt-4 crt-text-blue">
+            <span className="hidden sm:inline">STEUERUNG: ← → ↑ ↓ zum Navigieren, ENTER zum Auswählen</span>
+            <span className="sm:hidden">Tippe zum Auswählen</span>
           </p>
         </motion.div>
 
         {/* Verbesserter Balatro-Stil Character-Auswahl-Bereich */}
         <div 
-          className="relative mb-12 overflow-x-auto py-6 px-4 max-w-full hide-scrollbar bg-[#0a0a14]/80 border-t-2 border-b-2 border-[#ff0057]/50"
+          className="relative mb-8 sm:mb-12 overflow-x-auto py-4 sm:py-6 px-2 sm:px-4 max-w-full hide-scrollbar bg-[#0a0a14]/80 border-t-2 border-b-2 border-[#ff0057]/50"
           ref={selectorRef}
         >
-          <div className="flex space-x-6 min-w-max">
+          <div className="flex space-x-3 sm:space-x-4 md:space-x-6 min-w-max">
             {teamMembers.map((member, index) => (
               <motion.div
                 key={member.id}
@@ -266,28 +222,24 @@ export default function TeamSection() {
                 onClick={() => selectMember(index)}
                 onMouseEnter={() => {
                   setHighlightedMember(index)
-                  hoverSound.play();
+                  playHover();
                 }}
-                className="character-card cursor-pointer bg-[#0f111a] border-2 border-[#2196f3]/20 rounded-sm"
+                className="character-card cursor-pointer bg-[#0f111a] border-2 border-[#2196f3]/20 rounded-sm relative flex-shrink-0 w-44 h-72 sm:w-48 sm:h-80 md:w-52 md:h-80"
                 style={{
-                  width: '200px',
-                  height: '280px',
-                  flexShrink: 0,
-                  position: 'relative',
                   boxShadow: highlightedMember === index 
                     ? '0 0 15px rgba(255, 0, 87, 0.5)' 
                     : 'none'
                 }}
               >
-                <div className="p-3">
+                <div className="p-2 sm:p-3">
                   {/* Character Portrait mit Balatro-Stil */}
                   <div 
-                    className="w-full h-36 mb-3 overflow-hidden bg-[#090a12] relative border border-[#2196f3]/30"
+                    className="w-full h-28 sm:h-32 md:h-36 mb-2 sm:mb-3 overflow-hidden bg-[#090a12] relative border border-[#2196f3]/30"
                   >
                     {/* Platzhalter-Bild oder tatsächliches Bild */}
                     <div className="w-full h-full bg-gradient-to-br from-[#141428] to-[#111138] flex items-center justify-center">
                       {/* Icon/Initial wenn kein Bild vorhanden */}
-                      <span className="text-5xl crt-text-blue opacity-50 font-bold">
+                      <span className="text-3xl sm:text-4xl md:text-5xl crt-text-blue opacity-50 font-bold">
                         {member.name.charAt(0)}
                       </span>
                       
@@ -309,16 +261,16 @@ export default function TeamSection() {
                   
                   {/* Name und Rolle im Balatro-Stil */}
                   <div className="text-center mb-2">
-                    <h3 className={`text-base font-bold ${highlightedMember === index ? 'text-[#ff0057]' : 'text-white'} mb-0.5`}>
+                    <h3 className={`text-sm sm:text-base font-bold ${highlightedMember === index ? 'text-[#ff0057]' : 'text-white'} mb-0.5`}>
                       {member.name}
                     </h3>
                     <p className="text-xs text-[#2196f3]">{member.role}</p>
                   </div>
                   
                   {/* Stat-Balken im Balatro-Stil */}
-                  <div className="mt-3 space-y-2">
+                  <div className="mt-2 sm:mt-3 space-y-1 sm:space-y-2">
                     <div className="flex items-center text-xs">
-                      <span className="w-20 text-[#ff0057] mr-1">POWER</span>
+                      <span className="w-16 sm:w-20 text-[#ff0057] mr-1">POWER</span>
                       <div className="h-2 bg-[#090a12] flex-grow rounded-none overflow-hidden border border-[#ff0057]/30">
                         <div 
                           className="h-full bg-[#ff0057]" 
@@ -330,7 +282,7 @@ export default function TeamSection() {
                       </div>
                     </div>
                     <div className="flex items-center text-xs">
-                      <span className="w-20 text-[#2196f3] mr-1">SPEED</span>
+                      <span className="w-16 sm:w-20 text-[#2196f3] mr-1">SPEED</span>
                       <div className="h-2 bg-[#090a12] flex-grow rounded-none overflow-hidden border border-[#2196f3]/30">
                         <div 
                           className="h-full bg-[#2196f3]" 
@@ -342,7 +294,7 @@ export default function TeamSection() {
                       </div>
                     </div>
                     <div className="flex items-center text-xs">
-                      <span className="w-20 text-[#f5c542] mr-1">TECHNIK</span>
+                      <span className="w-16 sm:w-20 text-[#f5c542] mr-1">TECHNIK</span>
                       <div className="h-2 bg-[#090a12] flex-grow rounded-none overflow-hidden border border-[#f5c542]/30">
                         <div 
                           className="h-full bg-[#f5c542]" 
@@ -389,24 +341,25 @@ export default function TeamSection() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 30 }}
               transition={{ type: 'spring', damping: 25 }}
-              className="bg-[#0a0a14] border-2 border-[#2196f3]/30 p-6 relative mt-8"
+              className="bg-[#0a0a14] border-2 border-[#2196f3]/30 p-4 sm:p-6 relative mt-6 sm:mt-8"
             >
               <button 
                 onClick={() => setShowDetails(false)} 
-                className="absolute right-4 top-4 text-[#ff0057] hover:text-white px-2 py-1 border border-[#ff0057]/30 hover:border-[#ff0057] transition-colors text-sm flex items-center"
-                onMouseEnter={() => hoverSound.play()}
+                className="absolute right-2 sm:right-4 top-2 sm:top-4 text-[#ff0057] hover:text-white px-3 py-2 sm:px-2 sm:py-1 border border-[#ff0057]/30 hover:border-[#ff0057] transition-colors text-sm flex items-center min-h-[44px] min-w-[44px] sm:min-h-auto sm:min-w-auto justify-center"
+                onMouseEnter={() => playHover()}
               >
-                <span className="mr-1">ESC</span>
-                ZURÜCK
+                <span className="mr-1 hidden sm:inline">ESC</span>
+                <span className="sm:hidden">✕</span>
+                <span className="hidden sm:inline">ZURÜCK</span>
               </button>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
                 <div className="md:col-span-1">
                   {/* Character Portrait im Balatro-Stil */}
                   <div 
                     className="bg-gradient-to-br from-[#141428] to-[#111138] w-full aspect-square flex items-center justify-center border-2 border-[#2196f3]/50 relative"
                   >
-                    <span className="text-8xl crt-text-blue opacity-70 font-bold">
+                    <span className="text-6xl sm:text-7xl md:text-8xl crt-text-blue opacity-70 font-bold">
                       {teamMembers[selectedMember].name.charAt(0)}
                     </span>
                     
@@ -420,11 +373,11 @@ export default function TeamSection() {
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#ff0057]/10 to-transparent opacity-50 pointer-events-none"></div>
                   </div>
                   
-                  <div className="mt-4 text-center">
-                    <h3 className="text-2xl text-[#ff0057] font-bold mb-2">
+                  <div className="mt-3 sm:mt-4 text-center">
+                    <h3 className="text-xl sm:text-2xl text-[#ff0057] font-bold mb-2">
                       {teamMembers[selectedMember].name}
                     </h3>
-                    <p className="text-lg text-white">{teamMembers[selectedMember].role}</p>
+                    <p className="text-base sm:text-lg text-white">{teamMembers[selectedMember].role}</p>
                     <p className="mt-2 text-sm text-[#2196f3]">
                       Spezialität: {teamMembers[selectedMember].spezialität}
                     </p>
@@ -433,8 +386,8 @@ export default function TeamSection() {
                 
                 <div className="md:col-span-2">
                   {/* Charakterprofil im Balatro-Stil */}
-                  <div className="mb-6 bg-[#090a12] p-4 border border-[#2196f3]/30 relative">
-                    <h4 className="text-xl text-[#2196f3] mb-4 font-bold">CHARAKTERPROFIL</h4>
+                  <div className="mb-4 sm:mb-6 bg-[#090a12] p-3 sm:p-4 border border-[#2196f3]/30 relative">
+                    <h4 className="text-lg sm:text-xl text-[#2196f3] mb-3 sm:mb-4 font-bold">CHARAKTERPROFIL</h4>
                     <p className="text-white">
                       {teamMembers[selectedMember].beschreibung}
                     </p>
@@ -447,7 +400,7 @@ export default function TeamSection() {
                   </div>
                   
                   {/* Stats mit Animation */}
-                  <div className="space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     <div>
                       <h5 className="text-sm text-[#ff0057] mb-2 font-bold">POWER</h5>
                       <div className="h-4 bg-[#090a12] w-full rounded-none overflow-hidden relative border border-[#ff0057]/30">
@@ -498,11 +451,11 @@ export default function TeamSection() {
                   </div>
                   
                   {/* Auswahl-Button im Balatro-Stil */}
-                  <div className="mt-8 text-center">
+                  <div className="mt-6 sm:mt-8 text-center">
                     <button 
                       onClick={() => setShowDetails(false)}
-                      className="crt-button button-hover-effect px-8 py-3 bg-[#0f111a] border-2 border-[#ff0057] text-white relative overflow-hidden group"
-                      onMouseEnter={() => hoverSound.play()}
+                      className="crt-button button-hover-effect px-6 sm:px-8 py-3 sm:py-3 bg-[#0f111a] border-2 border-[#ff0057] text-white relative overflow-hidden group min-h-[48px] w-full sm:w-auto"
+                      onMouseEnter={() => playHover()}
                     >
                       <span className="relative z-10">CHARAKTER AUSWÄHLEN</span>
                       
@@ -530,13 +483,14 @@ export default function TeamSection() {
         
         {/* "Drücke Start" Hinweis für mehr Balatro-Feeling */}
         {!showDetails && (
-          <div className="text-center mt-6">
+          <div className="text-center mt-4 sm:mt-6">
             <motion.p 
               animate={{ opacity: [0.5, 1, 0.5] }}
               transition={{ repeat: Infinity, duration: 2 }}
-              className="text-lg text-[#ff0057] font-bold tracking-wide"
+              className="text-base sm:text-lg text-[#ff0057] font-bold tracking-wide"
             >
-              DRÜCKE EINE TASTE ZUR AUSWAHL
+              <span className="hidden sm:inline">DRÜCKE EINE TASTE ZUR AUSWAHL</span>
+              <span className="sm:hidden">TIPPE ZUR AUSWAHL</span>
             </motion.p>
           </div>
         )}

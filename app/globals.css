@@ -947,6 +947,41 @@ a:focus, button:focus {
   outline-offset: 2px;
 }
 
+/* High contrast mode */
+.high-contrast {
+  filter: contrast(150%) brightness(110%);
+}
+
+/* Exclude navbar from high contrast effects */
+.high-contrast nav {
+  filter: none;
+}
+
+.high-contrast .crt-text,
+.high-contrast .crt-text-red,
+.high-contrast .crt-text-blue {
+  text-shadow: 0 0 2px currentColor;
+}
+
+.high-contrast .balatro-card {
+  border-width: 2px;
+  background: rgba(0, 0, 0, 0.9) !important;
+}
+
+/* Reduced motion mode */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+.reduce-motion .glitch-text,
+.reduce-motion .crt-flicker {
+  animation: none !important;
+}
+
 a:focus:not(:focus-visible), button:focus:not(:focus-visible) {
   outline: none;
 }

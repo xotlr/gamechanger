@@ -1,25 +1,42 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Menu, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
+import { 
+  HomeIcon, 
+  ActivityIcon, 
+  CalendarIcon, 
+  FoldersIcon, 
+  UserIcon, 
+  InfoIcon, 
+  VolumeIcon, 
+  VolumeXIcon, 
+  MenuIcon,
+  XIcon 
+} from "raster-react"
 
-export default function Navbar() {
+interface NavbarProps {
+  isMuted: boolean
+  toggleSound: () => void
+}
+
+export default function Navbar({ isMuted, toggleSound }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [flickerChar, setFlickerChar] = useState(-1)
   
   const menuItems = [
-    { name: "Home", href: "#" },
-    { name: "Aktivitäten", href: "https://www.facebook.com/profile.php?id=61565503147498", external: true },
+    { name: "STARTSEITE", shortName: "START", href: "#", icon: HomeIcon },
+    { name: "AKTIVITÄTEN", shortName: "AKTIV", href: "https://www.facebook.com/profile.php?id=61565503147498", external: true, icon: ActivityIcon },
     {
-      name: "Veranstaltungen",
+      name: "VERANSTALTUNGEN",
+      shortName: "EVENTS", 
       href: "https://www.facebook.com/profile.php?id=61565503147498&sk=events",
       external: true,
+      icon: CalendarIcon
     },
-    { name: "Fotos", href: "https://www.facebook.com/profile.php?id=61565503147498&sk=photos", external: true },
-    { name: "Mitglied werden", href: "#member" },
-    { name: "Impressum", href: "#impressum" },
+    { name: "FOTOS", shortName: "FOTOS", href: "https://www.facebook.com/profile.php?id=61565503147498&sk=photos", external: true, icon: FoldersIcon },
+    { name: "MITGLIED WERDEN", shortName: "BEITRETEN", href: "#member", icon: UserIcon },
+    { name: "IMPRESSUM", shortName: "INFO", href: "#impressum", icon: InfoIcon },
   ]
   
   // Text flicker effect for logo
@@ -64,81 +81,291 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="py-6 relative">
+    <nav 
+      className="py-4 sticky top-0 z-50 border-b border-white/20" 
+      style={{
+        backgroundColor: 'rgba(30, 30, 50, 0.85)',
+        backdropFilter: 'blur(40px) saturate(180%)',
+        boxShadow: '0 4px 0 rgba(0, 0, 0, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.1)'
+      }}
+    >
       
-      <div className="flex justify-between items-center px-4">
+      <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
         {renderLogo()}
         
-        <div className="hidden md:flex space-x-6">
+        <div className="hidden lg:flex items-center space-x-3">
+          {/* Sound Toggle Button */}
+          <button 
+            onClick={toggleSound}
+            className="group px-3 py-2 text-sm flex items-center space-x-2 rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
+            style={{
+              color: "#ccc",
+              backgroundColor: "rgba(255, 255, 255, 0.05)"
+            }}
+            aria-label={isMuted ? "Sound aktivieren" : "Sound deaktivieren"}
+          >
+            {isMuted ? (
+              <VolumeXIcon size={16} strokeWidth={1} radius={1} />
+            ) : (
+              <VolumeIcon size={16} strokeWidth={1} radius={1} />
+            )}
+            <span className="text-xs">SOUND</span>
+          </button>
+          
           {menuItems.map((item, index) => (
             <a
               key={item.name}
               href={item.href}
               target={item.external ? "_blank" : undefined}
               rel={item.external ? "noopener noreferrer" : undefined}
-              className="nav-link hover:text-[#ff0057] transition-colors relative group"
-              style={{ 
-                color: index % 2 === 0 ? "#2196f3" : "#ff0057",
-                textShadow: index % 2 === 0 
-                  ? "0 0 5px rgba(33, 150, 243, 0.4)" 
-                  : "0 0 5px rgba(255, 0, 87, 0.4)"
+              className="group px-3 py-2 text-sm flex items-center space-x-2 rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
+              style={{
+                color: "#ccc",
+                backgroundColor: "rgba(255, 255, 255, 0.05)"
               }}
             >
-              {item.name}
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff0057] transition-all group-hover:w-full"></span>
+              <item.icon 
+                size={14} 
+                strokeWidth={1} 
+                radius={1}
+                className="transition-colors"
+                style={{
+                  color: index % 2 === 0 ? "#2196f3" : "#ff0057"
+                }}
+              />
+              <span className="hidden xl:inline font-mono tracking-wider text-xs transition-colors group-hover:text-white">
+                {item.shortName}
+              </span>
             </a>
           ))}
+          
+          <div className="h-6 w-px bg-white/30 mr-2 ml-4"></div>
+          
+          <button 
+            onClick={toggleSound} 
+            className="group px-3 py-2 text-sm flex items-center space-x-2 rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
+            aria-label={isMuted ? "Sound einschalten" : "Sound ausschalten"}
+            style={{ 
+              color: "#ccc",
+              backgroundColor: "rgba(255, 255, 255, 0.05)"
+            }}
+          >
+            {isMuted ? (
+              <VolumeXIcon 
+                size={14} 
+                strokeWidth={1} 
+                radius={1}
+                className="transition-colors"
+                style={{ color: "#ff6b6b" }}
+              />
+            ) : (
+              <VolumeIcon 
+                size={14} 
+                strokeWidth={1} 
+                radius={1}
+                className="transition-colors"
+                style={{ color: "#51cf66" }}
+              />
+            )}
+            <span className="hidden xl:inline font-mono tracking-wider text-xs group-hover:text-white transition-colors">{isMuted ? "AUS" : "AN"}</span>
+          </button>
         </div>
         
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="md:hidden hover:bg-[#ff0057]/10" 
+        {/* Medium screens - compact icons */}
+        <div className="hidden md:flex lg:hidden items-center space-x-2">
+          {menuItems.slice(0, 4).map((item, index) => (
+            <a
+              key={item.name}
+              href={item.href}
+              target={item.external ? "_blank" : undefined}
+              rel={item.external ? "noopener noreferrer" : undefined}
+              className="group px-2 py-2 rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
+              style={{ 
+                color: "#ccc",
+                backgroundColor: "rgba(255, 255, 255, 0.05)"
+              }}
+              title={item.name}
+            >
+              <item.icon 
+                size={16} 
+                strokeWidth={1} 
+                radius={1}
+                style={{
+                  color: index % 2 === 0 ? "#2196f3" : "#ff0057"
+                }}
+              />
+            </a>
+          ))}
+          
+          <div className="h-6 w-px bg-white/30 mr-1 ml-3"></div>
+          
+          <button 
+            onClick={toggleSound} 
+            className="group px-2 py-2 rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
+            aria-label={isMuted ? "Sound einschalten" : "Sound ausschalten"}
+            title={isMuted ? "Sound einschalten" : "Sound ausschalten"}
+            style={{ 
+              color: "#ccc",
+              backgroundColor: "rgba(255, 255, 255, 0.05)"
+            }}
+          >
+            {isMuted ? (
+              <VolumeXIcon 
+                size={16} 
+                strokeWidth={1} 
+                radius={1}
+                style={{ color: "#ff6b6b" }}
+              />
+            ) : (
+              <VolumeIcon 
+                size={16} 
+                strokeWidth={1} 
+                radius={1}
+                style={{ color: "#51cf66" }}
+              />
+            )}
+          </button>
+        </div>
+        
+        <button 
+          className="md:hidden px-3 py-2 rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
           onClick={() => setIsOpen(true)}
+          aria-label="Menü öffnen"
+          style={{ 
+            color: "#ccc",
+            backgroundColor: "rgba(255, 255, 255, 0.05)"
+          }}
         >
-          <Menu className="h-6 w-6 text-[#2196f3]" />
-          <span className="sr-only">Open menu</span>
-        </Button>
+          <MenuIcon 
+            size={16} 
+            strokeWidth={1} 
+            radius={1}
+          />
+        </button>
       </div>
       
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, x: "100%" }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: "100%" }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-black z-50 p-6"
+            className="fixed inset-0 z-50"
+            style={{
+              backgroundColor: 'rgba(10, 10, 20, 0.95)',
+              backdropFilter: 'blur(12px)',
+            }}
           >
             {/* CRT effects for mobile menu */}
-            <div className="scanlines opacity-30"></div>
-            <div className="vignette opacity-50"></div>
+            <div className="scanlines opacity-20"></div>
+            <div className="vignette opacity-40"></div>
             
-            <div className="flex justify-end">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setIsOpen(false)}
-                className="hover:bg-[#ff0057]/10"
-              >
-                <X className="h-6 w-6 text-[#ff0057]" />
-                <span className="sr-only">Close menu</span>
-              </Button>
-            </div>
-            
-            <div className="flex flex-col items-center justify-center h-full space-y-8">
-              {menuItems.map((item, index) => (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  target={item.external ? "_blank" : undefined}
-                  rel={item.external ? "noopener noreferrer" : undefined}
-                  className={index % 2 === 0 ? "text-2xl crt-text-blue hover:text-[#ff0057] transition-colors" : "text-2xl crt-text-red hover:text-[#2196f3] transition-colors"}
+            <div className="min-h-screen p-4 flex flex-col">
+              <div className="flex justify-between items-center mb-6 pt-2">
+                <div className="text-lg font-bold tracking-tighter arcade-text">
+                  <span style={{ color: "#ff0057", textShadow: "0 0 6px rgba(255, 0, 87, 0.6)" }}>GAME:</span>
+                  <span style={{ color: "#2196f3", textShadow: "0 0 6px rgba(33, 150, 243, 0.6)" }}>changer</span>
+                </div>
+                
+                <button 
+                  className="px-3 py-2 rounded-lg border border-white/20 hover:border-white/40 hover:bg-white/10 transition-all duration-200"
                   onClick={() => setIsOpen(false)}
+                  aria-label="Menü schließen"
+                  style={{
+                    color: "#ff0057",
+                    backgroundColor: "rgba(255, 255, 255, 0.05)"
+                  }}
                 >
-                  {item.name}
-                </a>
-              ))}
+                  <XIcon 
+                    size={16} 
+                    strokeWidth={1} 
+                    radius={1}
+                  />
+                </button>
+              </div>
+              
+              <div className="flex-1 flex flex-col justify-center space-y-2 px-4">
+                {/* Mobile Sound Toggle */}
+                <motion.button
+                  onClick={toggleSound}
+                  className="group px-4 py-3 text-base flex items-center space-x-3 w-full rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0 }}
+                  style={{ 
+                    color: "#ddd",
+                    backgroundColor: "rgba(255, 255, 255, 0.05)"
+                  }}
+                  aria-label={isMuted ? "Sound aktivieren" : "Sound deaktivieren"}
+                >
+                  {isMuted ? (
+                    <VolumeXIcon size={20} strokeWidth={1} radius={1} style={{ color: "#ff6b6b" }} />
+                  ) : (
+                    <VolumeIcon size={20} strokeWidth={1} radius={1} style={{ color: "#51cf66" }} />
+                  )}
+                  <span>SOUND: {isMuted ? "AUS" : "AN"}</span>
+                </motion.button>
+                
+                {menuItems.map((item, index) => (
+                  <motion.a
+                    key={item.name}
+                    href={item.href}
+                    target={item.external ? "_blank" : undefined}
+                    rel={item.external ? "noopener noreferrer" : undefined}
+                    className="group px-4 py-3 text-base flex items-center space-x-3 w-full rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
+                    onClick={() => setIsOpen(false)}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: (index + 1) * 0.1 }}
+                    style={{ 
+                      color: "#ddd",
+                      backgroundColor: "rgba(255, 255, 255, 0.05)"
+                    }}
+                  >
+                    <item.icon 
+                      size={20} 
+                      strokeWidth={1} 
+                      radius={1}
+                      style={{
+                        color: index % 2 === 0 ? "#2196f3" : "#ff0057"
+                      }}
+                    />
+                    <span className="font-mono tracking-wider text-sm">{item.name}</span>
+                  </motion.a>
+                ))}
+                
+                <div className="py-3">
+                  <div className="h-px bg-white/20 w-full"></div>
+                </div>
+                
+                <button 
+                  onClick={toggleSound} 
+                  className="group px-4 py-3 text-base flex items-center space-x-3 w-full rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
+                  aria-label={isMuted ? "Sound einschalten" : "Sound ausschalten"}
+                  style={{ 
+                    color: "#ddd",
+                    backgroundColor: "rgba(255, 255, 255, 0.05)"
+                  }}
+                >
+                  {isMuted ? (
+                    <VolumeXIcon 
+                      size={20} 
+                      strokeWidth={1} 
+                      radius={1}
+                      style={{ color: "#ff6b6b" }}
+                    />
+                  ) : (
+                    <VolumeIcon 
+                      size={20} 
+                      strokeWidth={1} 
+                      radius={1}
+                      style={{ color: "#51cf66" }}
+                    />
+                  )}
+                  <span className="font-mono tracking-wider text-sm group-hover:text-white transition-colors">SOUND {isMuted ? "AUS" : "AN"}</span>
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

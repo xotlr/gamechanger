@@ -2,59 +2,34 @@
 
 import { useState, useEffect, useRef, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronDown, ChevronUp, Trophy, Users, Heart, Clock, Gamepad2, Zap } from "lucide-react"
+import { 
+  ChevronDownIcon, 
+  ChevronUpIcon, 
+  UserIcon, 
+  HeartIcon, 
+  ClockIcon, 
+  GamepadIcon,
+  ThunderIcon
+} from "raster-react"
+import { useWebAudio } from "@/lib/audio-manager"
 
-// Audio-Hook für verschiedene Formate
-const useAudio = (path: string) => {
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
-  
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    try {
-      const audioTest = new Audio();
-      
-      if (audioTest.canPlayType('audio/ogg')) {
-        setAudio(new Audio(`${path.replace('.wav', '.ogg')}`));
-      } 
-      else if (audioTest.canPlayType('audio/mpeg')) {
-        setAudio(new Audio(`${path.replace('.wav', '.mp3')}`));
-      }
-      else {
-        setAudio(new Audio(path));
-      }
-    } catch (e) {
-      console.error("Audio konnte nicht geladen werden:", e);
-    }
-  }, [path]);
-  
-  const play = () => {
-    if (audio) {
-      audio.volume = 0.2;
-      audio.currentTime = 0;
-      audio.play().catch(e => console.log("Audio-Wiedergabe nicht möglich:", e));
-    }
-  }
-  
-  return { play };
-}
 
 // Features mit Icon, Titel und Beschreibung
 const features = [
   {
-    icon: <Users className="h-10 w-10" />,
+    icon: UserIcon,
     title: "Soziale Integration",
     description: "Wir schaffen eine inklusive und diverse eSports-Community für alle Interessierten, unabhängig von Alter, Erfahrung oder Fähigkeiten.",
     color: "#ff0057"
   },
   {
-    icon: <Trophy className="h-10 w-10" />,
+    icon: ThunderIcon,
     title: "Talente fördern",
     description: "Wir bieten jungen Menschen Zugang zu Technologien und Bildungsressourcen im Gaming-Sektor für ihre persönliche und berufliche Entwicklung.",
     color: "#2196f3"
   },
   {
-    icon: <Heart className="h-10 w-10" />,
+    icon: HeartIcon,
     title: "Gemeinschaft stärken",
     description: "Wir organisieren Turniere und Wettkämpfe für gesellige Zusammenkünfte unter Gleichgesinnten und fördern so soziale Bindungen.",
     color: "#ff0057"
@@ -64,19 +39,19 @@ const features = [
 // Zusätzliche Vereinsdetails
 const additionalInfo = [
   {
-    icon: <Clock className="h-6 w-6" />,
+    icon: ClockIcon,
     title: "Gegründet",
     detail: "April 2024",
     color: "#2196f3"
   },
   {
-    icon: <Gamepad2 className="h-6 w-6" />,
+    icon: GamepadIcon,
     title: "Aktivitäten",
     detail: "Turniere, Workshops, LAN-Parties",
     color: "#ff0057"
   },
   {
-    icon: <Zap className="h-6 w-6" />,
+    icon: ThunderIcon,
     title: "Fokus",
     detail: "eSport, Gaming, Gemeinschaft",
     color: "#2196f3"
@@ -111,18 +86,15 @@ export default function AboutSection() {
   const secretCodeRef = useRef<string[]>([])
   const secretCode = useMemo(() => ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'], [])
   
-  // Sound-Hooks
-  const hoverSound = useAudio('/sounds/hover.wav')
-  const selectSound = useAudio('/sounds/select.wav')
-  const glitchSound = useAudio('/sounds/glitch.wav')
-  const secretSound = useAudio('/sounds/secret.wav')
+  // Web Audio hooks
+  const { playHover, playSelect, playGlitch, playSecret } = useWebAudio()
 
   // Gelegentlicher Glitch-Effekt
   useEffect(() => {
     const glitchInterval = setInterval(() => {
       if (Math.random() > 0.9) { // 10% Chance für einen Glitch
         setGlitchActive(true)
-        glitchSound.play()
+        playGlitch()
         
         setTimeout(() => {
           setGlitchActive(false)
@@ -131,7 +103,7 @@ export default function AboutSection() {
     }, 5000)
     
     return () => clearInterval(glitchInterval)
-  }, [glitchSound])
+  }, [playGlitch])
 
   // Konami-Code-Detektor
   useEffect(() => {
@@ -149,7 +121,7 @@ export default function AboutSection() {
       
       if (isCodeCorrect && secretCodeRef.current.length === secretCode.length) {
         if (!showSecret) {
-          secretSound.play()
+          playSecret()
           setShowSecret(true)
         }
       }
@@ -160,7 +132,7 @@ export default function AboutSection() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [showSecret, secretCode, secretSound])
+  }, [showSecret, secretCode, playSecret])
 
   return (
     <section className="py-20 relative" id="about">
@@ -176,14 +148,7 @@ export default function AboutSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 
-            className={`text-3xl md:text-4xl font-bold mb-6 ${glitchActive ? 'opacity-90' : ''}`}
-            style={{
-              textShadow: glitchActive 
-                ? "2px 0 #ff0057, -2px 0 #2196f3"
-                : "0 0 10px rgba(255, 0, 87, 0.6), 0 0 20px rgba(33, 150, 243, 0.3)"
-            }}
-          >
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 glitch-text" data-text="ÜBER UNS">
             ÜBER UNS
           </h2>
           
@@ -200,9 +165,12 @@ export default function AboutSection() {
             <div className="flex flex-wrap justify-center gap-6 mt-6">
               {additionalInfo.map((info, index) => (
                 <div key={index} className="flex items-center gap-2 px-3 py-1.5 bg-[#090a12] border border-[#2196f3]/20">
-                  <div style={{ color: info.color }}>
-                    {info.icon}
-                  </div>
+                  <info.icon 
+                    size={20} 
+                    strokeWidth={1} 
+                    radius={1}
+                    style={{ color: info.color }}
+                  />
                   <div>
                     <div className="text-xs text-gray-400">{info.title}</div>
                     <div className="text-sm font-bold" style={{ color: info.color }}>{info.detail}</div>
@@ -244,7 +212,7 @@ export default function AboutSection() {
               } relative p-5`}
               onMouseEnter={() => {
                 setActiveFeature(index)
-                hoverSound.play()
+                playHover()
               }}
               onMouseLeave={() => setActiveFeature(null)}
             >
@@ -259,7 +227,12 @@ export default function AboutSection() {
                 transition={{ duration: 0.2 }}
                 style={{ color: feature.color }}
               >
-                {feature.icon}
+                <feature.icon 
+                  size={32} 
+                  strokeWidth={1} 
+                  radius={1}
+                  style={{ color: feature.color }}
+                />
               </motion.div>
               
               <h3 className="text-xl font-bold mb-3" style={{ color: feature.color }}>
@@ -330,18 +303,28 @@ export default function AboutSection() {
                 <button
                   className="w-full px-5 py-3 text-left flex justify-between items-center"
                   onClick={() => {
-                    selectSound.play()
+                    playSelect()
                     setExpandedFaq(expandedFaq === index ? null : index)
                   }}
-                  onMouseEnter={() => hoverSound.play()}
+                  onMouseEnter={() => playHover()}
                 >
                   <span className={`font-bold ${expandedFaq === index ? 'text-[#ff0057]' : 'text-white'}`}>
                     {item.question}
                   </span>
                   {expandedFaq === index ? (
-                    <ChevronUp className="h-5 w-5 text-[#ff0057]" />
+                    <ChevronUpIcon 
+                      size={16} 
+                      strokeWidth={1} 
+                      radius={1}
+                      style={{ color: "#ff0057" }}
+                    />
                   ) : (
-                    <ChevronDown className="h-5 w-5 text-[#2196f3]" />
+                    <ChevronDownIcon 
+                      size={16} 
+                      strokeWidth={1} 
+                      radius={1}
+                      style={{ color: "#2196f3" }}
+                    />
                   )}
                 </button>
                 
@@ -382,7 +365,7 @@ export default function AboutSection() {
                 <button 
                   onClick={() => setShowSecret(false)}
                   className="text-[#2196f3] hover:text-white px-2 py-1 border border-[#2196f3]/30"
-                  onMouseEnter={() => hoverSound.play()}
+                  onMouseEnter={() => playHover()}
                 >
                   SCHLIESSEN
                 </button>
@@ -432,10 +415,10 @@ export default function AboutSection() {
                 <button 
                   className="bg-[#0f111a] border-2 border-[#ff0057] px-6 py-2 text-white hover:bg-[#ff0057]/10 transition-colors"
                   onClick={() => {
-                    selectSound.play()
+                    playSelect()
                     window.location.href = "#member"
                   }}
-                  onMouseEnter={() => hoverSound.play()}
+                  onMouseEnter={() => playHover()}
                 >
                   JETZT BEITRETEN
                 </button>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import CRTEffect from "@/components/crt-effect"
 import Navbar from "@/components/navbar"
 import HeroSection from "@/components/hero-section"
@@ -107,84 +108,24 @@ function SimpleCursor() {
   )
 }
 
-// Audio-Manager für Sound-Effekte
-class AudioManager {
-  private sounds: { [key: string]: HTMLAudioElement } = {};
-  private muted: boolean = false;
-  
-  constructor() {
-    if (typeof window === 'undefined') return;
-    
-    // Sound-Effekte laden
-    this.loadSound('hover', '/sounds/sparkle.wav');
-    this.loadSound('click', '/sounds/unlock.wav');
-    this.loadSound('startup', '/sounds/game-over.wav');
-    
-    // Standardmäßig Sound ausschalten, um Audio-Probleme zu vermeiden
-    this.muted = true;
-    
-    // Lautstärke aus lokaler Speicherung abrufen
-    const savedMuted = localStorage.getItem('soundMuted');
-    if (savedMuted) {
-      this.muted = savedMuted === 'true';
-    }
-  }
-  
-  private loadSound(name: string): void {
-    if (typeof window === 'undefined') return;
-    try {
-      const audio = new Audio();
-      // Pfad erst bei Abspielen setzen, um das Vorab-Laden zu vermeiden
-      this.sounds[name] = audio;
-    } catch (e) {
-      console.error(`Fehler beim Laden des Sounds ${name}:`, e);
-    }
-  }
-  
-  public play(name: string): void {
-    if (this.muted || typeof window === 'undefined') return;
-    
-    const sound = this.sounds[name];
-    if (sound) {
-      // Sound zurücksetzen und abspielen
-      sound.volume = 0.2;
-      sound.src = `/sounds/${name}.mp3`;
-      sound.currentTime = 0;
-      sound.play().catch(e => console.log('Audio-Wiedergabe verhindert:', e));
-    }
-  }
-  
-  public toggleMute(): boolean {
-    this.muted = !this.muted;
-    
-    // Einstellung in lokaler Speicherung speichern
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('soundMuted', this.muted.toString());
-    }
-    
-    return this.muted;
-  }
-  
-  public isMuted(): boolean {
-    return this.muted;
-  }
-}
+import { audioManager } from "@/lib/audio-manager"
+import { SettingsIcon, VolumeIcon, VolumeXIcon, EyeIcon } from "raster-react"
 
 export default function Home() {
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
-  const [audioManager, setAudioManager] = useState<AudioManager | null>(null)
   const [isMuted, setIsMuted] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
+  const [crtEffectsEnabled, setCrtEffectsEnabled] = useState(true)
+  const [highContrast, setHighContrast] = useState(false)
+  const [reducedMotion, setReducedMotion] = useState(false)
   
   // Initialisierung
   useEffect(() => {
     setMounted(true)
     
-    if (!audioManager && typeof window !== 'undefined') {
-      const manager = new AudioManager();
-      setAudioManager(manager);
-      setIsMuted(manager.isMuted());
+    if (typeof window !== 'undefined') {
+      setIsMuted(audioManager.isMuted());
     }
     
     // Viewport-Höhe für Mobile-Geräte richtig setzen
@@ -198,7 +139,7 @@ export default function Home() {
     // Globale Interaktions-Events für Sound-Effekte
     const addInteractiveEffects = () => {
       const handleClick = (e: MouseEvent) => {
-        if (audioManager && !loading) {
+        if (!loading && !audioManager.isMuted()) {
           const target = e.target as HTMLElement;
           
           if (
@@ -208,13 +149,15 @@ export default function Home() {
             target.closest('a') ||
             target.classList.contains('interactive')
           ) {
-            audioManager.play('click');
+            audioManager.initializeOnUserAction().then(() => {
+              audioManager.playSelect();
+            });
           }
         }
       }
       
       const handleMouseOver = (e: MouseEvent) => {
-        if (audioManager && !loading) {
+        if (!loading && !audioManager.isMuted()) {
           const target = e.target as HTMLElement;
           
           if (
@@ -224,7 +167,7 @@ export default function Home() {
             target.closest('a') ||
             target.classList.contains('interactive')
           ) {
-            audioManager.play('hover');
+            audioManager.playHover();
           }
         }
       }
@@ -245,52 +188,105 @@ export default function Home() {
       window.removeEventListener('resize', setVh);
       cleanup();
     }
-  }, [audioManager, loading]);
+  }, [loading]);
   
   // Boot-Sequenz abschließen
   const handleBootComplete = () => {
-    if (audioManager) {
-      audioManager.play('startup');
-    }
+    audioManager.playStartup();
     setLoading(false);
   };
   
   // Sound ein-/ausschalten
   const toggleSound = () => {
-    if (audioManager) {
-      const muted = audioManager.toggleMute();
-      setIsMuted(muted);
-      
-      if (!muted) {
-        // Feedback-Sound abspielen, wenn Sound eingeschaltet wird
-        audioManager.play('click');
-      }
+    const muted = audioManager.toggleMute();
+    setIsMuted(muted);
+    
+    if (!muted) {
+      // Initialize audio and play feedback sound
+      audioManager.initializeOnUserAction().then(() => {
+        audioManager.playSelect();
+      });
     }
   };
   
   if (!mounted) return null;
   
   return (
-    <>
-      <main className="relative min-h-screen bg-background text-foreground font-terminal overflow-hidden">
-        {loading ? (
-          <BootSequence onComplete={handleBootComplete} />
-        ) : (
-          <>
-            {/* Einfache CRT-Effekte */}
-            <CRTEffect />
-            <Noise />
-            <SimpleCursor />
+    <div className={`${reducedMotion ? 'reduced-motion' : ''}`}>
+      {/* Override body background and accessibility styles */}
+      <style jsx global>{`
+        body {
+          background: black !important;
+        }
+        
+        .high-contrast {
+          filter: contrast(1.5) brightness(1.2);
+        }
+        
+        .reduced-motion * {
+          animation-duration: 0.001s !important;
+          animation-delay: 0s !important;
+          transition-duration: 0.001s !important;
+        }
+        
+        /* Focus styles for accessibility */
+        button:focus-visible,
+        a:focus-visible,
+        input:focus-visible,
+        textarea:focus-visible {
+          outline: 2px solid #ff0057;
+          outline-offset: 2px;
+        }
+        
+        /* Better touch targets on mobile */
+        @media (max-width: 768px) {
+          button, a {
+            min-height: 44px;
+            min-width: 44px;
+          }
+        }
+      `}</style>
+      
+      
+      {loading ? (
+        <BootSequence onComplete={handleBootComplete} />
+      ) : (
+        <>
+          {/* Global Background Layer */}
+          <div className="fixed inset-0 -z-10">
+            {/* Main hero background gradient - Full page */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a14] to-[#0a0a1c]"></div>
             
-            {/* Einfache CSS-CRT-Effekte für Fallback/Verbesserung */}
-            <div className="crt-overlay"></div>
-            <div className="scanlines"></div>
-            <div className="vignette"></div>
-            <div className="pixel-grid"></div>
-            <div className="scan-line"></div>
+            {/* Radial gradient for CRT glow */}
+            <div 
+              className="absolute inset-0"
+              style={{
+                background: 'radial-gradient(circle at center, rgba(0,0,0,0) 50%, rgba(0,0,0,0.5) 100%)',
+                opacity: 0.8
+              }}
+            />
+          </div>
+          
+          {/* Global UI Layer - All fixed elements coordinated */}
+          <div className="fixed inset-0 pointer-events-none z-50">
+            {/* CRT Effects - Global */}
+            {crtEffectsEnabled && (
+              <>
+                <CRTEffect />
+                <Noise />
+                <SimpleCursor />
+                
+                {/* CRT overlay effects - Full page */}
+                <div className="crt-overlay"></div>
+                <div className="scanlines"></div>
+                <div className="vignette"></div>
+                <div className="pixel-grid"></div>
+                <div className="scan-line"></div>
+              </>
+            )}
             
-            {/* Hintergrund-Partikel */}
-            <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+            {/* Background particles - Full page */}
+            <div className="absolute inset-0 overflow-hidden">
               {Array.from({ length: 20 }).map((_, i) => (
                 <div
                   key={i}
@@ -308,86 +304,196 @@ export default function Home() {
               ))}
             </div>
             
-            {/* Sound-Steuerung */}
-            <div className="fixed top-4 right-4 z-50">
-              <button 
-                onClick={toggleSound} 
-                className="crt-button px-3 py-2 text-sm flex items-center"
-                aria-label={isMuted ? "Sound einschalten" : "Sound ausschalten"}
-              >
-                <span className="mr-2">
-                  {isMuted ? "🔇" : "🔊"}
-                </span>
-                <span>{isMuted ? "SOUND: AUS" : "SOUND: AN"}</span>
-              </button>
+            {/* Interactive UI Elements */}
+            <div className="absolute top-0 left-0 right-0 pointer-events-auto">
+              <Navbar isMuted={isMuted} toggleSound={toggleSound} />
             </div>
             
-            {/* Einstellungen-Panel */}
-            <div className="fixed bottom-4 right-4 z-50">
-              <button 
+            <div className="fixed bottom-4 right-4 z-[60] pointer-events-auto">
+              <motion.button 
                 onClick={() => setShowSettings(!showSettings)}
-                className="crt-button px-3 py-2 text-sm"
-                aria-label="Einstellungen"
+                className={`crt-button px-4 py-3 text-sm flex items-center space-x-2 shadow-lg ${
+                  showSettings 
+                    ? 'bg-[#ff0057]/20 border-[#ff0057]/70 shadow-[#ff0057]/20' 
+                    : 'bg-white/5 border-white/20 hover:bg-white/10 hover:border-white/30'
+                } transition-colors duration-200`}
+                aria-label={showSettings ? "Einstellungen schließen" : "Einstellungen öffnen"}
+                aria-expanded={showSettings}
+                aria-haspopup="dialog"
+                initial={false}
+                animate={{ 
+                  rotate: reducedMotion ? 0 : (showSettings ? 45 : 0),
+                  scale: 1
+                }}
+                whileHover={reducedMotion ? {} : { scale: 1.02 }}
+                whileTap={reducedMotion ? {} : { scale: 0.98 }}
+                transition={{ 
+                  duration: reducedMotion ? 0.1 : 0.2,
+                  ease: "easeInOut"
+                }}
               >
-                ⚙️ OPTIONEN
-              </button>
+                <SettingsIcon 
+                  size={16} 
+                  strokeWidth={1} 
+                  radius={1}
+                />
+                <span className="hidden sm:inline">OPTIONEN</span>
+              </motion.button>
               
-              {showSettings && (
-                <div className="absolute bottom-full right-0 mb-2 p-4 balatro-card w-64">
-                  <h3 className="text-sm font-bold crt-text-red mb-4">EINSTELLUNGEN</h3>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Sound:</span>
-                      <button 
-                        onClick={toggleSound}
-                        className="crt-button px-2 py-1 text-xs"
-                      >
-                        {isMuted ? "AUS" : "AN"}
-                      </button>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">CRT-Effekte:</span>
-                      <button className="crt-button px-2 py-1 text-xs">
-                        AN
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-4 text-center">
-                    <button 
+              <AnimatePresence>
+                {showSettings && (
+                  <>
+                    {/* Click outside overlay */}
+                    <motion.div 
+                      className="fixed inset-0 z-[70]"
                       onClick={() => setShowSettings(false)}
-                      className="crt-button px-2 py-1 text-xs w-full"
-                    >
-                      SCHLIESSEN
-                    </button>
-                  </div>
-                </div>
-              )}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    />
+                    
+                    {/* Settings panel */}
+                    <motion.div 
+                      className={`absolute bottom-full right-0 mb-2 p-6 w-80 max-w-sm z-[80] pointer-events-auto rounded-lg border ${
+                        highContrast 
+                          ? 'bg-black/95 border-[#ff0057] shadow-[0_0_20px_rgba(255,0,87,0.3)]' 
+                          : 'bg-[#0a0a14]/95 border-[#2196f3]/30 shadow-2xl'
+                      }`}
+                      style={{
+                        backdropFilter: highContrast ? 'blur(20px)' : 'blur(30px) saturate(150%)',
+                        pointerEvents: 'auto'
+                      }}
+                      role="dialog"
+                      aria-modal="true"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{ 
+                        duration: reducedMotion ? 0.1 : 0.2,
+                        ease: "easeOut"
+                      }}
+                    >                    
+                    <div className="space-y-6">
+                      {/* Sound Control */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          {isMuted ? (
+                            <VolumeXIcon size={16} strokeWidth={1} radius={1} style={{ color: "#ff6b6b" }} />
+                          ) : (
+                            <VolumeIcon size={16} strokeWidth={1} radius={1} style={{ color: "#51cf66" }} />
+                          )}
+                          <span className="text-sm font-medium">Sound:</span>
+                        </div>
+                        <button 
+                          onClick={toggleSound}
+                          className={`px-3 py-2 text-xs min-w-[60px] rounded border transition-all duration-150 ${
+                            isMuted 
+                              ? 'border-red-500/70 bg-red-500/15 text-red-300 hover:bg-red-500/25' 
+                              : 'border-green-500/70 bg-green-500/15 text-green-300 hover:bg-green-500/25'
+                          } ${highContrast ? 'border-2 font-semibold' : ''}`}
+                          aria-label={isMuted ? "Sound aktivieren" : "Sound deaktivieren"}
+                          style={{ pointerEvents: 'auto', position: 'relative', zIndex: 90 }}
+                        >
+                          {isMuted ? "AUS" : "AN"}
+                        </button>
+                      </div>
+                      
+                      {/* CRT Effects */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <EyeIcon size={16} strokeWidth={1} radius={1} style={{ color: "#2196f3" }} />
+                          <span className="text-sm font-medium">CRT-Effekte:</span>
+                        </div>
+                        <button 
+                          onClick={() => setCrtEffectsEnabled(!crtEffectsEnabled)}
+                          className={`px-3 py-2 text-xs min-w-[60px] rounded border transition-all duration-150 ${
+                            crtEffectsEnabled 
+                              ? 'border-green-500/70 bg-green-500/15 text-green-300 hover:bg-green-500/25' 
+                              : 'border-red-500/70 bg-red-500/15 text-red-300 hover:bg-red-500/25'
+                          } ${highContrast ? 'border-2 font-semibold' : ''}`}
+                          aria-label={crtEffectsEnabled ? "CRT-Effekte deaktivieren" : "CRT-Effekte aktivieren"}
+                          style={{ pointerEvents: 'auto', position: 'relative', zIndex: 90 }}
+                        >
+                          {crtEffectsEnabled ? "AN" : "AUS"}
+                        </button>
+                      </div>
+                      
+                      {/* High Contrast */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Hoher Kontrast:</span>
+                        <button 
+                          onClick={() => setHighContrast(!highContrast)}
+                          className={`px-3 py-2 text-xs min-w-[60px] rounded border transition-all duration-150 ${
+                            highContrast 
+                              ? 'border-green-500/70 bg-green-500/15 text-green-300 hover:bg-green-500/25' 
+                              : 'border-red-500/70 bg-red-500/15 text-red-300 hover:bg-red-500/25'
+                          } ${highContrast ? 'border-2 font-semibold' : ''}`}
+                          aria-label={highContrast ? "Hohen Kontrast deaktivieren" : "Hohen Kontrast aktivieren"}
+                          style={{ pointerEvents: 'auto', position: 'relative', zIndex: 90 }}
+                        >
+                          {highContrast ? "AN" : "AUS"}
+                        </button>
+                      </div>
+                      
+                      {/* Reduced Motion */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Weniger Animationen:</span>
+                        <button 
+                          onClick={() => setReducedMotion(!reducedMotion)}
+                          className={`px-3 py-2 text-xs min-w-[60px] rounded border transition-all duration-150 ${
+                            reducedMotion 
+                              ? 'border-green-500/70 bg-green-500/15 text-green-300 hover:bg-green-500/25' 
+                              : 'border-red-500/70 bg-red-500/15 text-red-300 hover:bg-red-500/25'
+                          } ${highContrast ? 'border-2 font-semibold' : ''}`}
+                          aria-label={reducedMotion ? "Animationen aktivieren" : "Animationen reduzieren"}
+                          style={{ pointerEvents: 'auto', position: 'relative', zIndex: 90 }}
+                        >
+                          {reducedMotion ? "AN" : "AUS"}
+                        </button>
+                      </div>
+                    </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
             
-            {/* Tastatursteuerungs-Hinweis */}
-            <div className="fixed left-4 bottom-4 z-50">
+            <div className="fixed left-4 bottom-4 z-[55] pointer-events-auto hidden sm:block">
               <div className="balatro-card p-3 text-xs">
                 <div className="flex items-center gap-2">
-                  <span className="px-1 border border-[#ff0057]/50 rounded">↑↓</span>
+                  <kbd className="px-2 py-1 border border-[#ff0057]/50 rounded text-[#ff0057] font-mono text-xs">
+                    ↑↓
+                  </kbd>
                   <span className="text-[#2196f3]">Navigation</span>
+                  <kbd className="px-2 py-1 border border-[#2196f3]/50 rounded text-[#2196f3] font-mono text-xs ml-2">
+                    Tab
+                  </kbd>
+                  <span className="text-[#2196f3]">Fokus</span>
                 </div>
               </div>
             </div>
-            
-            {/* Hauptinhalt mit Einschaltanimation */}
-            <div className="relative z-10 container mx-auto px-4 turn-on-animation">
-              <Navbar />
+          </div>
+          
+          {/* Main Content */}
+          <main 
+            className={`relative min-h-screen bg-background text-foreground font-terminal ${
+              highContrast ? 'high-contrast' : ''
+            } ${
+              reducedMotion ? 'reduce-motion' : ''
+            }`}
+            style={{
+              filter: crtEffectsEnabled ? 'none' : 'none',
+            }}
+          >
+            <div className="pt-20">
               <HeroSection />
-              <AboutSection />
-              <TeamSection />
-              <ContactSection />
             </div>
-          </>
-        )}
-      </main>
-    </>
+            <AboutSection />
+            <TeamSection />
+            <ContactSection />
+          </main>
+        </>
+      )}
+    </div>
   )
 }

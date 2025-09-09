@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
+import { UserIcon, NetworkIcon } from "raster-react"
 
 export default function HeroSection() {
   const textRef = useRef<HTMLHeadingElement>(null)
@@ -39,7 +40,7 @@ export default function HeroSection() {
   return (
     <section 
       ref={sectionRef} 
-      className="h-screen flex flex-col items-center justify-center text-center relative" 
+      className="min-h-screen h-screen flex flex-col items-center justify-center text-center relative px-4 sm:px-6 lg:px-8" 
       id="hero"
     >
       {/* Statische CRT-Elemente */}
@@ -62,7 +63,7 @@ export default function HeroSection() {
         )}
       </AnimatePresence>
       
-      <div className="max-w-3xl mx-auto px-4 relative z-10">
+      <div className="max-w-4xl mx-auto w-full relative z-10">
         {/* Logo mit Glitch-Effekt - nur bei aktivem Glitch */}
         <motion.div 
           className="mb-8 relative inline-block"
@@ -74,7 +75,7 @@ export default function HeroSection() {
         >
           <h1 
             ref={textRef} 
-            className="text-4xl md:text-7xl font-bold tracking-tighter arcade-text"
+            className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter arcade-text"
             style={{ 
               textShadow: glitchActive 
                 ? "2px 0 #ff0057, -2px 0 #2196f3" 
@@ -89,7 +90,7 @@ export default function HeroSection() {
             {glitchActive && (
               <>
                 <motion.span 
-                  className="absolute inset-0 arcade-text text-4xl md:text-7xl font-bold tracking-tighter text-[#ff0057]"
+                  className="absolute inset-0 arcade-text text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter text-[#ff0057]"
                   initial={{ opacity: 0, x: -4 }}
                   animate={{ opacity: 0.8, x: -2 }}
                   exit={{ opacity: 0 }}
@@ -98,7 +99,7 @@ export default function HeroSection() {
                   GAME:changer
                 </motion.span>
                 <motion.span 
-                  className="absolute inset-0 arcade-text text-4xl md:text-7xl font-bold tracking-tighter text-[#2196f3]"
+                  className="absolute inset-0 arcade-text text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter text-[#2196f3]"
                   initial={{ opacity: 0, x: 4 }}
                   animate={{ opacity: 0.8, x: 2 }}
                   exit={{ opacity: 0 }}
@@ -127,7 +128,7 @@ export default function HeroSection() {
           animate={{ opacity: showEffect ? 1 : 0, y: showEffect ? 0 : 20 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
-          <p className="text-xl md:text-2xl crt-text-blue">
+          <p className="text-lg sm:text-xl md:text-2xl crt-text-blue">
             Wir sind ein gemeinnütziger Verein, um gesellige Zusammenkünfte mit &ldquo;gleichgesinnten&rdquo; rund ums Thema eSport zu forcieren
           </p>
           
@@ -140,14 +141,14 @@ export default function HeroSection() {
         
         {/* Buttons mit Hover-Effekten */}
         <motion.div 
-          className="flex flex-col md:flex-row gap-6 justify-center mb-16"
+          className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-12 sm:mb-16"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: showEffect ? 1 : 0, y: showEffect ? 0 : 20 }}
           transition={{ delay: 0.6, duration: 0.5 }}
         >
           <Button 
             href="#member" 
-            className="crt-button relative overflow-hidden min-w-[200px] group"
+            className="crt-button relative overflow-hidden w-full sm:w-auto sm:px-8 group"
             asChild
           >
             <a href="#member">
@@ -161,13 +162,19 @@ export default function HeroSection() {
               <span className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#ff0057] opacity-0 group-hover:opacity-100 transition-opacity"></span>
               <span className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#ff0057] opacity-0 group-hover:opacity-100 transition-opacity"></span>
               <span className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#ff0057] opacity-0 group-hover:opacity-100 transition-opacity"></span>
-              w
-              <span className="ml-2 inline-block">👾</span>
+              
+              <UserIcon 
+                size={16} 
+                strokeWidth={1} 
+                radius={1}
+                className="ml-2 inline-block" 
+                style={{ color: "#ff0057" }}
+              />
             </a>
           </Button>
           
           <Button 
-            className="crt-button border-[#2196f3] text-[#2196f3] hover:bg-[#2196f3]/10 relative overflow-hidden min-w-[200px] group"
+            className="crt-button border-[#2196f3] text-[#2196f3] hover:bg-[#2196f3]/10 relative overflow-hidden w-full sm:w-auto sm:px-8 group"
             asChild
           >
             <a 
@@ -186,7 +193,13 @@ export default function HeroSection() {
               <span className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#2196f3] opacity-0 group-hover:opacity-100 transition-opacity"></span>
               <span className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#2196f3] opacity-0 group-hover:opacity-100 transition-opacity"></span>
               
-              <span className="ml-2 inline-block">🌐</span>
+              <NetworkIcon 
+                size={16} 
+                strokeWidth={1} 
+                radius={1}
+                className="ml-2 inline-block" 
+                style={{ color: "#2196f3" }}
+              />
             </a>
           </Button>
         </motion.div>
@@ -203,17 +216,6 @@ export default function HeroSection() {
         <div className="w-2 h-2 bg-[#ff0057]/30 absolute bottom-1/3 left-1/4"></div>
       </div>
       
-      {/* Hintergrund im Balatro-Stil */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a14] to-[#0a0a1c] -z-10"></div>
-      
-      {/* Subtiler radial gradient für CRT-Glühen */}
-      <div 
-        className="absolute inset-0 pointer-events-none -z-5"
-        style={{
-          background: 'radial-gradient(circle at center, rgba(0,0,0,0) 50%, rgba(0,0,0,0.5) 100%)',
-          opacity: 0.8
-        }}
-      ></div>
     </section>
   )
 }
