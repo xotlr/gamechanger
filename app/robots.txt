@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# Important pages
+Allow: /
+Allow: /hello
+Allow: /test
+
+# API routes - typically blocked for SEO
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://your-domain.com/sitemap.xml
+
+# Crawl-delay (optional, in seconds)
+Crawl-delay: 1

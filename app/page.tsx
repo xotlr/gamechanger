@@ -112,6 +112,85 @@ import { audioManager } from "@/lib/audio-manager"
 import { SettingsIcon, VolumeIcon, VolumeXIcon, EyeIcon } from "raster-react"
 
 export default function Home() {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": ["Organization", "SportsOrganization", "LocalBusiness"],
+    "name": "GAME:changer",
+    "alternateName": ["GAME:changer eSport Gaming Verein", "Game Changer Retz", "Gaming Verein Retz"],
+    "description": "GAME:changer - Der führende eSport & Gaming Verein in Retz, Pleissing, Niederösterreich. Gaming Community, Turniere, Events.",
+    "url": "https://your-domain.com",
+    "logo": "https://your-domain.com/logo.png",
+    "image": "https://your-domain.com/og-image.jpg",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Retz",
+      "addressLocality": "Pleissing",
+      "addressRegion": "Niederösterreich", 
+      "postalCode": "2070",
+      "addressCountry": "AT"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 48.7567,
+      "longitude": 15.9457
+    },
+    "areaServed": [
+      {
+        "@type": "City",
+        "name": "Retz"
+      },
+      {
+        "@type": "City", 
+        "name": "Pleissing"
+      },
+      {
+        "@type": "State",
+        "name": "Niederösterreich"
+      }
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "customer service",
+      "availableLanguage": ["German", "de"]
+    },
+    "sameAs": [
+      "https://www.facebook.com/profile.php?id=61565503147498"
+    ],
+    "keywords": "Gaming Verein Retz, eSport Retz, Gaming Community, Turniere, Gaming Events, GAME:changer",
+    "sport": "eSports",
+    "memberOf": {
+      "@type": "Organization",
+      "name": "Österreichische Gaming Vereine"
+    },
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "name": "GAME:changer Gaming Verein Retz",
+        "url": "https://your-domain.com",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://your-domain.com/search?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "LocalBusiness",
+        "name": "GAME:changer Gaming Verein",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Retz",
+          "addressRegion": "Niederösterreich",
+          "addressCountry": "AT"
+        },
+        "geo": {
+          "@type": "GeoCoordinates", 
+          "latitude": 48.7567,
+          "longitude": 15.9457
+        }
+      }
+    ]
+  };
+
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
@@ -213,6 +292,12 @@ export default function Home() {
   
   return (
     <div className={`${reducedMotion ? 'reduced-motion' : ''}`}>
+      {/* Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      
       {/* Override body background and accessibility styles */}
       <style jsx global>{`
         body {
