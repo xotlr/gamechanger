@@ -94,24 +94,6 @@ export default function Navbar({ isMuted, toggleSound }: NavbarProps) {
         {renderLogo()}
         
         <div className="hidden lg:flex items-center space-x-3">
-          {/* Sound Toggle Button */}
-          <button 
-            onClick={toggleSound}
-            className="group px-3 py-2 text-sm flex items-center space-x-2 rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
-            style={{
-              color: "#ccc",
-              backgroundColor: "rgba(255, 255, 255, 0.05)"
-            }}
-            aria-label={isMuted ? "Sound aktivieren" : "Sound deaktivieren"}
-          >
-            {isMuted ? (
-              <VolumeXIcon size={16} strokeWidth={1} radius={1} />
-            ) : (
-              <VolumeIcon size={16} strokeWidth={1} radius={1} />
-            )}
-            <span className="text-xs">SOUND</span>
-          </button>
-          
           {menuItems.map((item, index) => (
             <a
               key={item.name}
@@ -335,36 +317,6 @@ export default function Navbar({ isMuted, toggleSound }: NavbarProps) {
                   </motion.a>
                 ))}
                 
-                <div className="py-3">
-                  <div className="h-px bg-white/20 w-full"></div>
-                </div>
-                
-                <button 
-                  onClick={toggleSound} 
-                  className="group px-4 py-3 text-base flex items-center space-x-3 w-full rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
-                  aria-label={isMuted ? "Sound einschalten" : "Sound ausschalten"}
-                  style={{ 
-                    color: "#ddd",
-                    backgroundColor: "rgba(255, 255, 255, 0.05)"
-                  }}
-                >
-                  {isMuted ? (
-                    <VolumeXIcon 
-                      size={20} 
-                      strokeWidth={1} 
-                      radius={1}
-                      style={{ color: "#ff6b6b" }}
-                    />
-                  ) : (
-                    <VolumeIcon 
-                      size={20} 
-                      strokeWidth={1} 
-                      radius={1}
-                      style={{ color: "#51cf66" }}
-                    />
-                  )}
-                  <span className="font-mono tracking-wider text-sm group-hover:text-white transition-colors">SOUND {isMuted ? "AUS" : "AN"}</span>
-                </button>
               </div>
             </div>
           </motion.div>
