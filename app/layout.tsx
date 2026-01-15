@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://gamechanger-retz.at'),
   title: {
     default: 'GAME:changer - eSport Gaming Verein Retz Pleissing Niederösterreich',
     template: '%s | GAME:changer Retz Gaming'
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'de_AT',
-    url: 'https://your-domain.com',
+    url: 'https://gamechanger-retz.at',
     siteName: 'GAME:changer',
     title: 'GAME:changer - eSport Gaming Verein Retz Pleissing',
     description: 'GAME:changer - Der führende eSport & Gaming Verein in Retz, Pleissing, Niederösterreich. Gaming Community, Turniere, Events!',
@@ -58,7 +59,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: 'your-google-verification-code',
+    google: 'google-site-verification=REPLACE_WITH_YOUR_VERIFICATION_CODE',
   },
 };
 
@@ -85,7 +86,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         
-        <link rel="canonical" href="https://your-domain.com" />
+        <link rel="canonical" href="https://gamechanger-retz.at" />
         <meta name="geo.region" content="AT-3" />
         <meta name="geo.placename" content="Retz, Pleissing" />
         <meta name="geo.position" content="48.7567,15.9457" />

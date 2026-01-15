@@ -2,326 +2,252 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { 
-  HomeIcon, 
-  ActivityIcon, 
-  CalendarIcon, 
-  FoldersIcon, 
-  UserIcon, 
-  InfoIcon, 
-  VolumeIcon, 
-  VolumeXIcon, 
-  MenuIcon,
-  XIcon 
+import {
+  HomeIcon, ActivityIcon, CalendarIcon, FoldersIcon,
+  UserIcon, InfoIcon, VolumeIcon, VolumeXIcon, MenuIcon, XIcon
 } from "raster-react"
+import { CardCorners } from "@/components/ui/card-corners"
 
 interface NavbarProps {
   isMuted: boolean
   toggleSound: () => void
 }
 
-export default function Navbar({ isMuted, toggleSound }: NavbarProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [flickerChar, setFlickerChar] = useState(-1)
-  
-  const menuItems = [
-    { name: "STARTSEITE", shortName: "START", href: "#", icon: HomeIcon },
-    { name: "AKTIVITÄTEN", shortName: "AKTIV", href: "https://www.facebook.com/profile.php?id=61565503147498", external: true, icon: ActivityIcon },
-    {
-      name: "VERANSTALTUNGEN",
-      shortName: "EVENTS", 
-      href: "https://www.facebook.com/profile.php?id=61565503147498&sk=events",
-      external: true,
-      icon: CalendarIcon
-    },
-    { name: "FOTOS", shortName: "FOTOS", href: "https://www.facebook.com/profile.php?id=61565503147498&sk=photos", external: true, icon: FoldersIcon },
-    { name: "MITGLIED WERDEN", shortName: "BEITRETEN", href: "#member", icon: UserIcon },
-    { name: "IMPRESSUM", shortName: "INFO", href: "#impressum", icon: InfoIcon },
-  ]
-  
-  // Text flicker effect for logo
+const NAV = [
+  { label: "STARTSEITE", short: "START", href: "#", icon: HomeIcon },
+  { label: "AKTIVITÄTEN", short: "AKTIV", href: "https://www.facebook.com/profile.php?id=61565503147498", ext: true, icon: ActivityIcon },
+  { label: "VERANSTALTUNGEN", short: "EVENTS", href: "https://www.facebook.com/profile.php?id=61565503147498&sk=events", ext: true, icon: CalendarIcon },
+  { label: "FOTOS", short: "FOTOS", href: "https://www.facebook.com/profile.php?id=61565503147498&sk=photos", ext: true, icon: FoldersIcon },
+  { label: "MITGLIED WERDEN", short: "JOIN", href: "#member", icon: UserIcon },
+  { label: "IMPRESSUM", short: "INFO", href: "#impressum", icon: InfoIcon },
+]
+
+function Logo() {
+  const [flicker, setFlicker] = useState(-1)
+
   useEffect(() => {
-    const flickerInterval = setInterval(() => {
+    const id = setInterval(() => {
       if (Math.random() > 0.95) {
-        // Set random character position to flicker
-        const randomCharPos = Math.floor(Math.random() * 13) // "GAME:changer" has 13 chars
-        setFlickerChar(randomCharPos)
-        
-        // Clear flicker after short delay
-        setTimeout(() => setFlickerChar(-1), 100)
-      } else {
-        setFlickerChar(-1)
+        setFlicker(Math.floor(Math.random() * 13))
+        setTimeout(() => setFlicker(-1), 100)
       }
     }, 100)
-    
-    return () => clearInterval(flickerInterval)
+    return () => clearInterval(id)
   }, [])
-  
-  // Render logo with character flicker
-  const renderLogo = () => {
-    const logo = "GAME:changer"
-    return (
-      <div className="text-2xl font-bold tracking-tighter arcade-text">
-        {logo.split('').map((char, i) => (
-          <span 
-            key={i} 
-            className={i === flickerChar ? "opacity-0" : ""}
-            style={{ 
-              color: i < 5 ? "#ff0057" : "#2196f3",
-              textShadow: i < 5 
-                ? "0 0 5px rgba(255, 0, 87, 0.6), 0 0 10px rgba(255, 0, 87, 0.3)" 
-                : "0 0 5px rgba(33, 150, 243, 0.6), 0 0 10px rgba(33, 150, 243, 0.3)"
-            }}
-          >
-            {char}
-          </span>
-        ))}
-      </div>
-    )
-  }
 
   return (
-    <nav 
-      className="py-4 sticky top-0 z-50 border-b border-white/20" 
+    <div className="text-2xl font-bold tracking-tighter arcade-text">
+      {"GAME:changer".split('').map((c, i) => (
+        <span
+          key={i}
+          className={flicker === i ? "opacity-0" : ""}
+          style={{
+            color: i < 5 ? "#ff0057" : "#2196f3",
+            textShadow: i < 5 ? "0 0 5px rgba(255, 0, 87, 0.6)" : "0 0 5px rgba(33, 150, 243, 0.6)"
+          }}
+        >
+          {c}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function NavLink({ item, i, compact = false }: { item: typeof NAV[0]; i: number; compact?: boolean }) {
+  return (
+    <a
+      href={item.href}
+      target={item.ext ? "_blank" : undefined}
+      rel={item.ext ? "noopener noreferrer" : undefined}
+      className="group px-3 py-2 flex items-center space-x-2 rounded-lg border border-white/10 hover:border-white/30 hover:bg-white/10 transition-all"
+      style={{ color: "#ccc", backgroundColor: "rgba(255, 255, 255, 0.05)" }}
+      title={item.label}
+    >
+      <item.icon size={compact ? 16 : 14} strokeWidth={1} radius={1} style={{ color: i % 2 === 0 ? "#2196f3" : "#ff0057" }} />
+      {!compact && <span className="hidden xl:inline font-mono tracking-wider text-xs group-hover:text-white">{item.short}</span>}
+    </a>
+  )
+}
+
+function SoundButton({ isMuted, toggleSound, size = 14 }: { isMuted: boolean; toggleSound: () => void; size?: number }) {
+  return (
+    <button
+      onClick={toggleSound}
+      className="group px-3 py-2 flex items-center space-x-2 rounded-lg border border-white/10 hover:border-white/30 hover:bg-white/10 transition-all"
+      aria-label={isMuted ? "Sound einschalten" : "Sound ausschalten"}
+      style={{ color: "#ccc", backgroundColor: "rgba(255, 255, 255, 0.05)" }}
+    >
+      {isMuted
+        ? <VolumeXIcon size={size} strokeWidth={1} radius={1} style={{ color: "#ff6b6b" }} />
+        : <VolumeIcon size={size} strokeWidth={1} radius={1} style={{ color: "#51cf66" }} />
+      }
+      <span className="hidden xl:inline font-mono tracking-wider text-xs group-hover:text-white">{isMuted ? "AUS" : "AN"}</span>
+    </button>
+  )
+}
+
+export default function Navbar({ isMuted, toggleSound }: NavbarProps) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <nav
+      className="py-4 sticky top-0 z-50 border-b border-white/20"
       style={{
         backgroundColor: 'rgba(30, 30, 50, 0.85)',
         backdropFilter: 'blur(40px) saturate(180%)',
         boxShadow: '0 4px 0 rgba(0, 0, 0, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.1)'
       }}
     >
-      
       <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
-        {renderLogo()}
-        
+        <Logo />
+
         <div className="hidden lg:flex items-center space-x-3">
-          {menuItems.map((item, index) => (
-            <a
-              key={item.name}
-              href={item.href}
-              target={item.external ? "_blank" : undefined}
-              rel={item.external ? "noopener noreferrer" : undefined}
-              className="group px-3 py-2 text-sm flex items-center space-x-2 rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
-              style={{
-                color: "#ccc",
-                backgroundColor: "rgba(255, 255, 255, 0.05)"
-              }}
-            >
-              <item.icon 
-                size={14} 
-                strokeWidth={1} 
-                radius={1}
-                className="transition-colors"
-                style={{
-                  color: index % 2 === 0 ? "#2196f3" : "#ff0057"
-                }}
-              />
-              <span className="hidden xl:inline font-mono tracking-wider text-xs transition-colors group-hover:text-white">
-                {item.shortName}
-              </span>
-            </a>
-          ))}
-          
-          <div className="h-6 w-px bg-white/30 mr-2 ml-4"></div>
-          
-          <button 
-            onClick={toggleSound} 
-            className="group px-3 py-2 text-sm flex items-center space-x-2 rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
-            aria-label={isMuted ? "Sound einschalten" : "Sound ausschalten"}
-            style={{ 
-              color: "#ccc",
-              backgroundColor: "rgba(255, 255, 255, 0.05)"
-            }}
-          >
-            {isMuted ? (
-              <VolumeXIcon 
-                size={14} 
-                strokeWidth={1} 
-                radius={1}
-                className="transition-colors"
-                style={{ color: "#ff6b6b" }}
-              />
-            ) : (
-              <VolumeIcon 
-                size={14} 
-                strokeWidth={1} 
-                radius={1}
-                className="transition-colors"
-                style={{ color: "#51cf66" }}
-              />
-            )}
-            <span className="hidden xl:inline font-mono tracking-wider text-xs group-hover:text-white transition-colors">{isMuted ? "AUS" : "AN"}</span>
-          </button>
+          {NAV.map((item, i) => <NavLink key={item.label} item={item} i={i} />)}
+          <div className="h-6 w-px bg-white/30 ml-4 mr-2" />
+          <SoundButton isMuted={isMuted} toggleSound={toggleSound} />
         </div>
-        
-        {/* Medium screens - compact icons */}
+
         <div className="hidden md:flex lg:hidden items-center space-x-2">
-          {menuItems.slice(0, 4).map((item, index) => (
-            <a
-              key={item.name}
-              href={item.href}
-              target={item.external ? "_blank" : undefined}
-              rel={item.external ? "noopener noreferrer" : undefined}
-              className="group px-2 py-2 rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
-              style={{ 
-                color: "#ccc",
-                backgroundColor: "rgba(255, 255, 255, 0.05)"
-              }}
-              title={item.name}
-            >
-              <item.icon 
-                size={16} 
-                strokeWidth={1} 
-                radius={1}
-                style={{
-                  color: index % 2 === 0 ? "#2196f3" : "#ff0057"
-                }}
-              />
-            </a>
-          ))}
-          
-          <div className="h-6 w-px bg-white/30 mr-1 ml-3"></div>
-          
-          <button 
-            onClick={toggleSound} 
-            className="group px-2 py-2 rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
-            aria-label={isMuted ? "Sound einschalten" : "Sound ausschalten"}
-            title={isMuted ? "Sound einschalten" : "Sound ausschalten"}
-            style={{ 
-              color: "#ccc",
-              backgroundColor: "rgba(255, 255, 255, 0.05)"
-            }}
-          >
-            {isMuted ? (
-              <VolumeXIcon 
-                size={16} 
-                strokeWidth={1} 
-                radius={1}
-                style={{ color: "#ff6b6b" }}
-              />
-            ) : (
-              <VolumeIcon 
-                size={16} 
-                strokeWidth={1} 
-                radius={1}
-                style={{ color: "#51cf66" }}
-              />
-            )}
-          </button>
+          {NAV.slice(0, 4).map((item, i) => <NavLink key={item.label} item={item} i={i} compact />)}
+          <div className="h-6 w-px bg-white/30 mx-2" />
+          <SoundButton isMuted={isMuted} toggleSound={toggleSound} size={16} />
         </div>
-        
-        <button 
-          className="md:hidden px-3 py-2 rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
-          onClick={() => setIsOpen(true)}
+
+        <button
+          className="md:hidden px-3 py-2 rounded-lg border border-white/10 hover:border-white/30 hover:bg-white/10"
+          onClick={() => setOpen(true)}
           aria-label="Menü öffnen"
-          style={{ 
-            color: "#ccc",
-            backgroundColor: "rgba(255, 255, 255, 0.05)"
-          }}
+          style={{ color: "#ccc", backgroundColor: "rgba(255, 255, 255, 0.05)" }}
         >
-          <MenuIcon 
-            size={16} 
-            strokeWidth={1} 
-            radius={1}
-          />
+          <MenuIcon size={16} strokeWidth={1} radius={1} />
         </button>
       </div>
-      
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-50"
-            style={{
-              backgroundColor: 'rgba(10, 10, 20, 0.95)',
-              backdropFilter: 'blur(12px)',
-            }}
-          >
-            {/* CRT effects for mobile menu */}
-            <div className="scanlines opacity-20"></div>
-            <div className="vignette opacity-40"></div>
-            
-            <div className="min-h-screen p-4 flex flex-col">
-              <div className="flex justify-between items-center mb-6 pt-2">
-                <div className="text-lg font-bold tracking-tighter arcade-text">
-                  <span style={{ color: "#ff0057", textShadow: "0 0 6px rgba(255, 0, 87, 0.6)" }}>GAME:</span>
-                  <span style={{ color: "#2196f3", textShadow: "0 0 6px rgba(33, 150, 243, 0.6)" }}>changer</span>
+
+      {open && (
+        <div
+          className="fixed inset-0 overflow-y-auto"
+          style={{ zIndex: 99999, background: '#0a0a14' }}
+        >
+          <div className="scanlines opacity-30" />
+          <div className="vignette opacity-50" />
+
+          <div className="min-h-full p-6 flex flex-col relative">
+              {/* Header */}
+              <motion.div
+                className="flex justify-between items-center mb-8"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <div className="text-xl font-bold arcade-text">
+                  <span style={{ color: "#ff0057", textShadow: "0 0 10px rgba(255, 0, 87, 0.8)" }}>GAME:</span>
+                  <span style={{ color: "#2196f3", textShadow: "0 0 10px rgba(33, 150, 243, 0.8)" }}>changer</span>
                 </div>
-                
-                <button 
-                  className="px-3 py-2 rounded-lg border border-white/20 hover:border-white/40 hover:bg-white/10 transition-all duration-200"
-                  onClick={() => setIsOpen(false)}
+                <motion.button
+                  className="relative p-3 border-2 border-[#ff0057]/50 bg-[#090a12]"
+                  onClick={() => setOpen(false)}
                   aria-label="Menü schließen"
-                  style={{
-                    color: "#ff0057",
-                    backgroundColor: "rgba(255, 255, 255, 0.05)"
-                  }}
+                  whileHover={{ scale: 1.05, borderColor: '#ff0057', boxShadow: '0 0 20px rgba(255,0,87,0.5)' }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <XIcon 
-                    size={16} 
-                    strokeWidth={1} 
-                    radius={1}
-                  />
-                </button>
-              </div>
-              
-              <div className="flex-1 flex flex-col justify-center space-y-2 px-4">
-                {/* Mobile Sound Toggle */}
+                  <CardCorners color="#ff0057" size="sm" />
+                  <XIcon size={20} strokeWidth={1.5} radius={1} style={{ color: "#ff0057" }} />
+                </motion.button>
+              </motion.div>
+
+              {/* Menu title */}
+              <motion.div
+                className="text-center mb-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.15 }}
+              >
+                <span className="text-xs font-mono text-[#2196f3]/70 tracking-[0.3em]">SELECT DESTINATION</span>
+                <div className="h-px w-32 mx-auto mt-2 bg-gradient-to-r from-transparent via-[#2196f3]/50 to-transparent" />
+              </motion.div>
+
+              {/* Menu grid */}
+              <div className="flex-1 grid grid-cols-2 gap-4 content-center max-w-md mx-auto w-full">
+                {/* Sound toggle */}
                 <motion.button
                   onClick={toggleSound}
-                  className="group px-4 py-3 text-base flex items-center space-x-3 w-full rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0 }}
-                  style={{ 
-                    color: "#ddd",
-                    backgroundColor: "rgba(255, 255, 255, 0.05)"
+                  className="relative aspect-square flex flex-col items-center justify-center p-4 border-2 border-[#2196f3]/40 bg-[#090a12]"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2 }}
+                  whileHover={{
+                    scale: 1.05,
+                    borderColor: '#2196f3',
+                    boxShadow: '0 0 30px rgba(33, 150, 243, 0.4)'
                   }}
-                  aria-label={isMuted ? "Sound aktivieren" : "Sound deaktivieren"}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  {isMuted ? (
-                    <VolumeXIcon size={20} strokeWidth={1} radius={1} style={{ color: "#ff6b6b" }} />
-                  ) : (
-                    <VolumeIcon size={20} strokeWidth={1} radius={1} style={{ color: "#51cf66" }} />
-                  )}
-                  <span>SOUND: {isMuted ? "AUS" : "AN"}</span>
+                  <CardCorners color="#2196f3" size="sm" />
+                  {isMuted
+                    ? <VolumeXIcon size={36} strokeWidth={1} radius={1} style={{ color: "#ff6b6b" }} />
+                    : <VolumeIcon size={36} strokeWidth={1} radius={1} style={{ color: "#51cf66" }} />
+                  }
+                  <div className="mt-3 px-3 py-1.5 bg-black/60 border border-[#2196f3]/30">
+                    <span className="font-mono text-xs text-white tracking-wider">
+                      {isMuted ? "SOUND OFF" : "SOUND ON"}
+                    </span>
+                  </div>
                 </motion.button>
-                
-                {menuItems.map((item, index) => (
-                  <motion.a
-                    key={item.name}
-                    href={item.href}
-                    target={item.external ? "_blank" : undefined}
-                    rel={item.external ? "noopener noreferrer" : undefined}
-                    className="group px-4 py-3 text-base flex items-center space-x-3 w-full rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200 hover:bg-white/10"
-                    onClick={() => setIsOpen(false)}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: (index + 1) * 0.1 }}
-                    style={{ 
-                      color: "#ddd",
-                      backgroundColor: "rgba(255, 255, 255, 0.05)"
-                    }}
-                  >
-                    <item.icon 
-                      size={20} 
-                      strokeWidth={1} 
-                      radius={1}
-                      style={{
-                        color: index % 2 === 0 ? "#2196f3" : "#ff0057"
+
+                {NAV.map((item, i) => {
+                  const isBlue = i % 2 === 0
+                  const color = isBlue ? '#2196f3' : '#ff0057'
+
+                  return (
+                    <motion.a
+                      key={item.label}
+                      href={item.href}
+                      target={item.ext ? "_blank" : undefined}
+                      rel={item.ext ? "noopener noreferrer" : undefined}
+                      className="relative aspect-square flex flex-col items-center justify-center p-4 border-2 bg-[#090a12]"
+                      style={{ borderColor: `${color}40` }}
+                      onClick={() => setOpen(false)}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.2 + (i + 1) * 0.05 }}
+                      whileHover={{
+                        scale: 1.05,
+                        borderColor: color,
+                        boxShadow: `0 0 30px ${isBlue ? 'rgba(33, 150, 243, 0.4)' : 'rgba(255, 0, 87, 0.4)'}`
                       }}
-                    />
-                    <span className="font-mono tracking-wider text-sm">{item.name}</span>
-                  </motion.a>
-                ))}
-                
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <CardCorners color={color} size="sm" />
+                      <item.icon size={36} strokeWidth={1} radius={1} style={{ color }} />
+                      <div
+                        className="mt-3 px-3 py-1.5 bg-black/60 border"
+                        style={{ borderColor: `${color}30` }}
+                      >
+                        <span className="font-mono text-xs text-white tracking-wider">{item.short}</span>
+                      </div>
+                    </motion.a>
+                  )
+                })}
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+              {/* Footer hint */}
+              <motion.div
+                className="text-center mt-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                <span className="text-xs font-mono text-white/40">TAP TO SELECT</span>
+              </motion.div>
+
+            {/* Large corner decorations */}
+            <span className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-[#ff0057]" />
+            <span className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-[#ff0057]" />
+            <span className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-[#2196f3]" />
+            <span className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-[#2196f3]" />
+          </div>
+        </div>
+      )}
     </nav>
   )
 }
