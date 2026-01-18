@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og'
+import React from 'react'
 
 export const runtime = 'edge'
 export const size = { width: 180, height: 180 }
@@ -38,8 +39,8 @@ const C_PATTERN = [
 export default function AppleIcon() {
   // Generate SVG pixel art - scaled up for 180x180
   const pixelSize = 6
-  const gPixels: JSX.Element[] = []
-  const cPixels: JSX.Element[] = []
+  const gPixels: React.ReactElement[] = []
+  const cPixels: React.ReactElement[] = []
 
   // G letter (red) - left side
   for (let y = 0; y < 12; y++) {

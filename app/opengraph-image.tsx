@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og'
+import React from 'react'
 
 export const runtime = 'edge'
 export const alt = 'GAME:changer eSport & Gaming Verein'
@@ -39,8 +40,8 @@ const C_PATTERN = [
 export default async function Image() {
   // Generate SVG pixel art - large scale for OG image
   const pixelSize = 20
-  const gPixels: JSX.Element[] = []
-  const cPixels: JSX.Element[] = []
+  const gPixels: React.ReactElement[] = []
+  const cPixels: React.ReactElement[] = []
 
   // G letter (red)
   for (let y = 0; y < 12; y++) {
