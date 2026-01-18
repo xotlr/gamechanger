@@ -28,6 +28,7 @@ interface Props {
   variant?: Variant
   pixelSize?: number
   color?: string
+  color2?: string
   className?: string
   style?: React.CSSProperties
   antialias?: boolean
@@ -168,6 +169,7 @@ const VERT = `void main() { gl_Position = vec4(position, 1.0); }`
 const FRAG = `
 precision highp float;
 uniform vec3 uColor;
+uniform vec3 uColor2;
 uniform vec2 uResolution;
 uniform float uTime;
 uniform float uPixelSize;
@@ -248,8 +250,40 @@ void main() {
   vec2 centerDist = gl_FragCoord.xy / uResolution - 0.5;
   float distFromCenter = length(centerDist * vec2(aspect, 1.0));
 
+  // Smooth Gaussian ripple (original approach)
+  float rippleBoost = 0.0;
+  if (uEnableRipples == 1) {
+    const float dampT = 1.0;
+    const float dampR = 10.0;
+
+    for (int i = 0; i < MAX_CLICKS; i++) {
+      vec2 pos = uClickPos[i];
+      if (pos.x < 0.0) continue;
+
+      // Convert click position to UV space (continuous, not grid cells)
+      vec2 cuv = ((pos - uResolution * 0.5) / uResolution) * vec2(aspect, 1.0);
+
+      float t = max(uTime - uClickTimes[i], 0.0);
+
+      // Distance in UV space
+      float r = distance(uv, cuv);
+
+      // Expanding wave radius
+      float waveR = uRippleSpeed * t;
+
+      // Smooth Gaussian ring: exp(-(x²))
+      float ring = exp(-pow((r - waveR) / uRippleThickness, 2.0));
+
+      // Double exponential decay: time + distance
+      float atten = exp(-dampT * t) * exp(-dampR * r);
+
+      // Use max to prevent overlapping artifacts
+      rippleBoost = max(rippleBoost, ring * atten * uRippleIntensity);
+    }
+  }
+
   float base = fbm2(uv, uTime * 0.05) * 0.5 - 0.65;
-  float feed = base + (uDensity - 0.5) * 0.3;
+  float feed = base + (uDensity - 0.5) * 0.3 + rippleBoost;
 
   // Radial growth from center - slow expansion over time
   if (uCenterGrow > 0.0) {
@@ -258,23 +292,13 @@ void main() {
     feed *= radialMask;
   }
 
-  if (uEnableRipples == 1) {
-    for (int i = 0; i < MAX_CLICKS; i++) {
-      vec2 pos = uClickPos[i];
-      if (pos.x < 0.0) continue;
-      vec2 cuv = ((pos - uResolution * .5 - cellSize * .5) / uResolution) * vec2(aspect, 1.0);
-      float t = max(uTime - uClickTimes[i], 0.0);
-      float r = distance(uv, cuv);
-      float ring = exp(-pow((r - uRippleSpeed * t) / uRippleThickness, 2.0));
-      feed = max(feed, ring * exp(-t) * exp(-10.0 * r) * uRippleIntensity);
-    }
-  }
-
+  // Grid rendering - binary threshold decision
   float bayer = Bayer8(fragCoord / uPixelSize) - 0.5;
   float bw = step(0.5, feed + bayer);
   float h = fract(sin(dot(pixelId, vec2(127.1, 311.7))) * 43758.5453);
   float coverage = bw * (1.0 + (h - 0.5) * uPixelJitter);
 
+  // Render grid mask (includes ripple cells)
   float M;
   if (uShapeType == 1) M = maskCircle(pixelUV, coverage);
   else if (uShapeType == 2) M = maskTriangle(pixelUV, pixelId, coverage);
@@ -287,7 +311,10 @@ void main() {
     M *= smoothstep(0.0, uEdgeFade, edge);
   }
 
-  vec3 c = mix(uColor * 12.92, 1.055 * pow(uColor, vec3(1.0/2.4)) - 0.055, step(0.0031308, uColor));
+  // Blend colors based on ripple intensity
+  vec3 finalColor = mix(uColor, uColor2, clamp(rippleBoost, 0.0, 1.0));
+
+  vec3 c = mix(finalColor * 12.92, 1.055 * pow(finalColor, vec3(1.0/2.4)) - 0.055, step(0.0031308, finalColor));
   fragColor = vec4(c, M);
 }
 `
@@ -302,6 +329,7 @@ const PixelBlast = React.forwardRef<PixelBlastRef, Props>(function PixelBlast({
   variant = 'square',
   pixelSize = 3,
   color = '#B19EEF',
+  color2 = '#B19EEF',
   className,
   style,
   antialias = true,
@@ -347,6 +375,7 @@ const PixelBlast = React.forwardRef<PixelBlastRef, Props>(function PixelBlast({
       s.uniforms.uShapeType.value = SHAPES[variant]
       s.uniforms.uPixelSize.value = pixelSize * s.renderer.getPixelRatio()
       ;(s.uniforms.uColor.value as THREE.Color).set(color)
+      ;(s.uniforms.uColor2.value as THREE.Color).set(color2)
       s.uniforms.uScale.value = patternScale
       s.uniforms.uDensity.value = patternDensity
       s.uniforms.uPixelJitter.value = pixelSizeJitter
@@ -369,6 +398,7 @@ const PixelBlast = React.forwardRef<PixelBlastRef, Props>(function PixelBlast({
       uResolution: { value: new THREE.Vector2() },
       uTime: { value: 0 },
       uColor: { value: new THREE.Color(color) },
+      uColor2: { value: new THREE.Color(color2) },
       uClickPos: { value: Array.from({ length: MAX_CLICKS }, () => new THREE.Vector2(-1, -1)) },
       uClickTimes: { value: new Float32Array(MAX_CLICKS) },
       uShapeType: { value: SHAPES[variant] },

@@ -26,11 +26,10 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false)
   const [crtEnabled, setCrtEnabled] = useState(true)
 
-  const blastRedRef = useRef<PixelBlastRef>(null)
-  const blastBlueRef = useRef<PixelBlastRef>(null)
+  const blastRef = useRef<PixelBlastRef>(null)
 
   const { isMuted, toggleSound, playStartup } = useAudio()
-  const { highContrast, setHighContrast, reducedMotion, setReducedMotion } = useAccessibility()
+  const { highContrast, setHighContrast, reducedMotion, setReducedMotion, dyslexiaMode, setDyslexiaMode } = useAccessibility()
   useViewport()
 
   useEffect(() => setMounted(true), [])
@@ -39,8 +38,7 @@ export default function Home() {
     if (!mounted || loading) return
 
     const onClick = (e: MouseEvent) => {
-      blastRedRef.current?.triggerRipple(e.clientX, e.clientY)
-      blastBlueRef.current?.triggerRipple(e.clientX, e.clientY)
+      blastRef.current?.triggerRipple(e.clientX, e.clientY)
 
       if (audioManager.isMuted()) return
       const t = e.target as HTMLElement
@@ -65,6 +63,14 @@ export default function Home() {
     }
   }, [mounted, loading])
 
+  useEffect(() => {
+    if (dyslexiaMode) {
+      document.documentElement.classList.add('dyslexia-mode')
+    } else {
+      document.documentElement.classList.remove('dyslexia-mode')
+    }
+  }, [dyslexiaMode])
+
   const onBootComplete = () => {
     playStartup()
     setLoading(false)
@@ -74,7 +80,7 @@ export default function Home() {
 
   return (
     <ErrorBoundary>
-      <div className={`h-screen w-screen overflow-hidden ${reducedMotion ? 'reduced-motion' : ''}`}>
+      <div className={`h-screen w-screen overflow-hidden ${reducedMotion ? 'reduce-motion' : ''}`}>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }}
@@ -82,11 +88,6 @@ export default function Home() {
 
         <style jsx global>{`
           body { background: black !important; }
-          .high-contrast { filter: contrast(1.5) brightness(1.2); }
-          .reduced-motion * {
-            animation-duration: 0.001s !important;
-            transition-duration: 0.001s !important;
-          }
           button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible {
             outline: 2px solid #ff0057;
             outline-offset: 2px;
@@ -100,12 +101,21 @@ export default function Home() {
           <BootSequence onComplete={onBootComplete} />
         ) : (
           <>
+            {/* Skip to content link for accessibility */}
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-[#ff0057] focus:text-white focus:border-2 focus:border-white"
+              aria-label="Zum Hauptinhalt springen"
+            >
+              Zum Hauptinhalt springen
+            </a>
+
             {/* Fixed background - z-0 */}
-            <Background redRef={blastRedRef} blueRef={blastBlueRef} />
+            <Background blastRef={blastRef} reducedMotion={reducedMotion} />
 
             {/* Fixed overlays - z-50, pointer-events-none */}
             <div className="fixed inset-0 pointer-events-none z-50">
-              {crtEnabled && (
+              {crtEnabled && !reducedMotion && (
                 <>
                   <CRTEffect />
                   <Noise />
@@ -119,7 +129,7 @@ export default function Home() {
               )}
 
               <div className="absolute top-0 left-0 right-0 pointer-events-auto">
-                <Navbar isMuted={isMuted} toggleSound={toggleSound} />
+                <Navbar isMuted={isMuted} toggleSound={toggleSound} reducedMotion={reducedMotion} />
               </div>
 
               <SettingsPanel
@@ -133,6 +143,8 @@ export default function Home() {
                 setHighContrast={setHighContrast}
                 reducedMotion={reducedMotion}
                 setReducedMotion={setReducedMotion}
+                dyslexiaMode={dyslexiaMode}
+                setDyslexiaMode={setDyslexiaMode}
               />
 
               <KeyHints />
@@ -140,7 +152,7 @@ export default function Home() {
 
             {/* ScrollArea wraps only the scrollable content */}
             <ScrollArea className="h-screen w-screen">
-              <main className={`relative z-10 min-h-screen text-foreground font-terminal pointer-events-none ${highContrast ? 'high-contrast' : ''}`}>
+              <main id="main-content" className={`relative z-10 min-h-screen pb-24 text-foreground font-terminal pointer-events-none ${highContrast ? 'high-contrast' : ''}`}>
                 <div className="pt-20 pointer-events-auto">
                   <HeroSection />
                 </div>
@@ -163,17 +175,20 @@ export default function Home() {
 }
 
 interface BackgroundProps {
-  redRef: React.RefObject<PixelBlastRef | null>
-  blueRef: React.RefObject<PixelBlastRef | null>
+  blastRef: React.RefObject<PixelBlastRef | null>
+  reducedMotion: boolean
 }
 
-function Background({ redRef, blueRef }: BackgroundProps) {
+function Background({ blastRef, reducedMotion }: BackgroundProps) {
   return (
     <div className="fixed inset-0 w-screen h-screen" style={{ zIndex: 0 }}>
-      <PixelBlast ref={blueRef} {...PIXEL_BLAST_BLUE} />
-      <div className="absolute inset-0">
-        <PixelBlast ref={redRef} {...PIXEL_BLAST_RED} />
-      </div>
+      <PixelBlast
+        ref={blastRef}
+        {...PIXEL_BLAST_BLUE}
+        color2={PIXEL_BLAST_RED.color}
+        speed={reducedMotion ? 0 : PIXEL_BLAST_BLUE.speed}
+        enableRipples={!reducedMotion}
+      />
     </div>
   )
 }

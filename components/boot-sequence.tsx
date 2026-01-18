@@ -123,24 +123,6 @@ export default function BootSequence({ onComplete }: { onComplete: () => void })
             <span className="text-[#2196f3]">RETZ, AUSTRIA</span>
             <span className="text-[#ff0057]">{progress.toFixed(0)}%</span>
           </div>
-
-          {showLogo && (
-            <div className="mt-8 text-center">
-              <div
-                ref={logoRef}
-                className="inline-block arcade-text text-4xl md:text-6xl font-bold"
-                style={{
-                  background: 'linear-gradient(90deg, #ff0057, #2196f3)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  textShadow: '0 0 20px rgba(255, 0, 87, 0.6), 0 0 40px rgba(33, 150, 243, 0.4)'
-                }}
-              >
-                GAMECHANGER
-              </div>
-              <div className="mt-4 text-sm text-white/70">KLICKE ZUM STARTEN</div>
-            </div>
-          )}
         </div>
       </div>
     </div>

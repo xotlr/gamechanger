@@ -14,6 +14,8 @@ interface SettingsPanelProps {
   setHighContrast: (enabled: boolean) => void
   reducedMotion: boolean
   setReducedMotion: (enabled: boolean) => void
+  dyslexiaMode: boolean
+  setDyslexiaMode: (enabled: boolean) => void
 }
 
 export default function SettingsPanel({
@@ -27,6 +29,8 @@ export default function SettingsPanel({
   setHighContrast,
   reducedMotion,
   setReducedMotion,
+  dyslexiaMode,
+  setDyslexiaMode,
 }: SettingsPanelProps) {
   return (
     <div className="fixed bottom-4 right-4 z-[60] pointer-events-auto">
@@ -133,6 +137,14 @@ export default function SettingsPanel({
                   onToggle={() => setReducedMotion(!reducedMotion)}
                   highContrast={highContrast}
                   ariaLabel={reducedMotion ? "Animationen aktivieren" : "Animationen reduzieren"}
+                />
+
+                <SettingToggle
+                  label="Legasthenie-Modus"
+                  enabled={dyslexiaMode}
+                  onToggle={() => setDyslexiaMode(!dyslexiaMode)}
+                  highContrast={highContrast}
+                  ariaLabel={dyslexiaMode ? "Legasthenie-Modus deaktivieren" : "Legasthenie-Modus aktivieren"}
                 />
               </div>
             </motion.div>

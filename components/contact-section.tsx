@@ -182,15 +182,85 @@ export default function ContactSection() {
         `}</style>
       </section>
 
-      <section className="py-12 border-t border-[#ff0057]/30" id="impressum">
+      <section className="py-16 border-t border-[#ff0057]/30" id="impressum">
         <div className="max-w-5xl mx-auto px-4">
-          <h2 className="text-2xl font-bold mb-6 glitch-text" data-text="IMPRESSUM">IMPRESSUM</h2>
-          <div className="space-y-4 crt-text text-sm">
-            <p>GAME:changer · Gemeinnütziger Verein · ZVR: 1759611362</p>
-            <p>Verantwortlich: David Brandhuber, Michael Wojnar</p>
-            <p>Design: Iris Brandhuber, David Brandhuber · Web: Ronald Bauer</p>
-            <p>Kontakt: verein.gamechanger@gmail.com</p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="text-3xl font-bold mb-8 text-center glitch-text" data-text="IMPRESSUM">IMPRESSUM</h2>
+
+            <Panel className="p-8" borderColor="blue">
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* Organization Info */}
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <LandmarkIcon size={24} strokeWidth={1} radius={1} className="text-[#2196f3] mt-1 flex-shrink-0" />
+                    <div>
+                      <h3 className="text-lg font-bold mb-3" style={{ color: "#2196f3", textShadow: "0 0 10px rgba(33, 150, 243, 0.5)" }}>
+                        ORGANISATION
+                      </h3>
+                      <div className="space-y-2 crt-text text-sm">
+                        <p className="text-white/90">GAME:changer</p>
+                        <p className="text-white/70">Gemeinnütziger Verein</p>
+                        <p className="text-white/70">ZVR: 1759611362</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contact Info */}
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <MailIcon size={24} strokeWidth={1} radius={1} className="text-[#ff0057] mt-1 flex-shrink-0" />
+                    <div>
+                      <h3 className="text-lg font-bold mb-3" style={{ color: "#ff0057", textShadow: "0 0 10px rgba(255, 0, 87, 0.5)" }}>
+                        KONTAKT
+                      </h3>
+                      <div className="space-y-2 crt-text text-sm">
+                        <a
+                          href="mailto:verein.gamechanger@gmail.com"
+                          className="text-white/90 hover:text-[#ff0057] transition-colors block"
+                        >
+                          verein.gamechanger@gmail.com
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Team Info */}
+                <div className="space-y-4 md:col-span-2 pt-4 border-t border-white/10">
+                  <div className="flex items-start space-x-3">
+                    <NetworkIcon size={24} strokeWidth={1} radius={1} className="text-[#2196f3] mt-1 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold mb-3" style={{ color: "#2196f3", textShadow: "0 0 10px rgba(33, 150, 243, 0.5)" }}>
+                        TEAM
+                      </h3>
+                      <div className="grid md:grid-cols-3 gap-4 crt-text text-sm">
+                        <div>
+                          <p className="text-white/50 text-xs mb-1">Verantwortlich</p>
+                          <p className="text-white/90">David Brandhuber</p>
+                          <p className="text-white/90">Michael Wojnar</p>
+                        </div>
+                        <div>
+                          <p className="text-white/50 text-xs mb-1">Design</p>
+                          <p className="text-white/90">Iris Brandhuber</p>
+                          <p className="text-white/90">David Brandhuber</p>
+                        </div>
+                        <div>
+                          <p className="text-white/50 text-xs mb-1">Web Development</p>
+                          <p className="text-white/90">Ronald Bauer</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Panel>
+          </motion.div>
         </div>
       </section>
     </>

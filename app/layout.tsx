@@ -32,20 +32,11 @@ export const metadata: Metadata = {
     siteName: 'GAME:changer',
     title: 'GAME:changer - eSport Gaming Verein Retz Pleissing',
     description: 'GAME:changer - Der führende eSport & Gaming Verein in Retz, Pleissing, Niederösterreich. Gaming Community, Turniere, Events!',
-    images: [
-      {
-        url: '/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'GAME:changer eSport & Gaming Verein',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'GAME:changer - Gaming Verein Retz',
     description: 'GAME:changer - eSport & Gaming Verein in Retz, Pleissing, Niederösterreich.',
-    images: ['/twitter-image.jpg'],
   },
   robots: {
     index: true,
@@ -76,15 +67,12 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#ff0057" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+
         <link rel="manifest" href="/site.webmanifest" />
         
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
         
         <link rel="canonical" href="https://gamechanger-retz.at" />
         <meta name="geo.region" content="AT-3" />

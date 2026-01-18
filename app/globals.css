@@ -40,7 +40,6 @@ body {
 }
 
 html, body {
-  overflow: hidden;
   height: 100%;
   width: 100%;
 }
@@ -948,7 +947,7 @@ a:focus, button:focus {
   outline-offset: 2px;
 }
 
-/* High contrast mode */
+/* High contrast mode - Comprehensive */
 .high-contrast {
   filter: contrast(150%) brightness(110%);
 }
@@ -964,12 +963,123 @@ a:focus, button:focus {
   text-shadow: 0 0 2px currentColor;
 }
 
-.high-contrast .balatro-card {
-  border-width: 2px;
-  background: rgba(0, 0, 0, 0.9) !important;
+/* Enhance CRT overlay effects for better visibility */
+.high-contrast .scanlines {
+  opacity: 0.8 !important;
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    rgba(220, 30, 70, 0.15) 25%,
+    transparent 50%,
+    rgba(33, 150, 243, 0.15) 75%,
+    transparent 100%) !important;
 }
 
-/* Reduced motion mode */
+.high-contrast .vignette {
+  opacity: 1 !important;
+  background: radial-gradient(
+    circle at center,
+    transparent 40%,
+    rgba(0, 0, 0, 0.8) 100%) !important;
+}
+
+.high-contrast .pixel-grid {
+  opacity: 0.8 !important;
+}
+
+.high-contrast .crt-overlay {
+  opacity: 0.7 !important;
+}
+
+.high-contrast .noise {
+  opacity: 0.15 !important;
+}
+
+/* Enhance cards with thicker borders and stronger shadows */
+.high-contrast .activity-card,
+.high-contrast .game-card,
+.high-contrast .balatro-card,
+.high-contrast .footer-card {
+  border-width: 3px !important;
+  background-color: rgba(0, 0, 0, 0.95) !important;
+  border-color: #2196f3 !important;
+  box-shadow: 0 0 20px rgba(33, 150, 243, 0.6) !important;
+}
+
+/* Enhance buttons */
+.high-contrast .btn-primary,
+.high-contrast .crt-button {
+  border-width: 2px !important;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9) !important;
+}
+
+.high-contrast .btn-primary {
+  background: linear-gradient(to bottom, #ff0057, rgba(255, 0, 87, 0.8)) !important;
+  color: #fff !important;
+  border-color: #ff0057 !important;
+}
+
+.high-contrast .crt-button {
+  background-color: rgba(50, 50, 100, 0.9) !important;
+  border-color: #ff0057 !important;
+  color: #fff !important;
+}
+
+/* Enhance navigation elements */
+.high-contrast .nav-link {
+  border-width: 2px !important;
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Enhance interactive images */
+.high-contrast .interactive-image {
+  border: 3px solid #2196f3 !important;
+  box-shadow: 0 0 20px rgba(33, 150, 243, 0.4) !important;
+}
+
+/* Enhance headings */
+.high-contrast h1,
+.high-contrast h2,
+.high-contrast h3,
+.high-contrast h4,
+.high-contrast h5,
+.high-contrast h6 {
+  color: #2196f3 !important;
+  text-shadow: 0 0 10px rgba(33, 150, 243, 0.5) !important;
+}
+
+/* Ensure paragraph text is bright white */
+.high-contrast p {
+  color: #fff !important;
+}
+
+/* Enhance glitch text effects */
+.high-contrast .glitch-text {
+  text-shadow:
+    0 0 8px #ff0057,
+    0 0 16px #2196f3 !important;
+}
+
+/* Enhance contact options */
+.high-contrast .contact-options a {
+  border-width: 2px !important;
+  background-color: rgba(33, 150, 243, 0.2) !important;
+}
+
+/* Enhance team list items */
+.high-contrast .team-list-item {
+  border-color: #2196f3 !important;
+}
+
+/* Enhance input fields */
+.high-contrast input,
+.high-contrast textarea {
+  border-width: 2px !important;
+  background-color: rgba(0, 0, 0, 0.9) !important;
+  color: #fff !important;
+  border-color: #2196f3 !important;
+}
+
+/* Reduced motion mode - Comprehensive */
 .reduce-motion *,
 .reduce-motion *::before,
 .reduce-motion *::after {
@@ -978,9 +1088,112 @@ a:focus, button:focus {
   transition-duration: 0.01ms !important;
 }
 
-.reduce-motion .glitch-text,
-.reduce-motion .crt-flicker {
+/* Disable CRT overlays and visual effects */
+.reduce-motion .crt-overlay,
+.reduce-motion .scanlines,
+.reduce-motion .vignette,
+.reduce-motion .pixel-grid,
+.reduce-motion .scan-line,
+.reduce-motion .noise {
+  opacity: 0 !important;
   animation: none !important;
+  display: none !important;
+}
+
+/* Disable all keyframe animations */
+.reduce-motion .glitch-text,
+.reduce-motion .crt-flicker,
+.reduce-motion .animate-float,
+.reduce-motion .hero-particle,
+.reduce-motion .typing-animation,
+.reduce-motion .fade-in-animation,
+.reduce-motion .pulse-animation,
+.reduce-motion .turn-on-animation,
+.reduce-motion .loading-text,
+.reduce-motion .loading-bar::before,
+.reduce-motion .animate-on-scroll {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+/* Disable typing animation - show full text immediately */
+.reduce-motion .typing-animation,
+.reduce-motion .typing-animation.typing-done {
+  width: auto !important;
+  visibility: visible !important;
+  white-space: normal !important;
+}
+
+/* Disable ALL hover transitions and transforms */
+.reduce-motion .activity-card,
+.reduce-motion .game-card,
+.reduce-motion .balatro-card,
+.reduce-motion .footer-card,
+.reduce-motion .team-list-item,
+.reduce-motion .interactive-image,
+.reduce-motion .button-hover-effect,
+.reduce-motion .nav-link,
+.reduce-motion .contact-options a,
+.reduce-motion .hover-float {
+  transition: none !important;
+}
+
+/* Remove all hover transforms */
+.reduce-motion .activity-card:hover,
+.reduce-motion .game-card:hover,
+.reduce-motion .balatro-card:hover,
+.reduce-motion .footer-card:hover,
+.reduce-motion .team-list-item:hover,
+.reduce-motion .interactive-image:hover,
+.reduce-motion .hover-float:hover,
+.reduce-motion .contact-options a:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Disable button shine effects */
+.reduce-motion .button-hover-effect::after,
+.reduce-motion .button-hover-effect::before,
+.reduce-motion .nav-link::after,
+.reduce-motion .game-card::before {
+  transition: none !important;
+  opacity: 0 !important;
+}
+
+/* Disable scale animations on activity numbers */
+.reduce-motion .activity-card:hover .activity-number {
+  transform: none !important;
+}
+
+/* Disable glow effects */
+.reduce-motion .glow-effect {
+  transition: none !important;
+}
+
+/* Disable image zoom on hover */
+.reduce-motion .interactive-image:hover img {
+  transform: none !important;
+}
+
+/* Dyslexia-friendly mode */
+.dyslexia-mode {
+  font-family: 'Lexend', sans-serif !important;
+}
+
+.dyslexia-mode * {
+  font-family: 'Lexend', sans-serif !important;
+  letter-spacing: 0.12em !important;
+  word-spacing: 0.16em !important;
+  line-height: 1.5 !important;
+}
+
+/* Preserve monospace for code elements even in dyslexia mode */
+.dyslexia-mode code,
+.dyslexia-mode pre,
+.dyslexia-mode .font-terminal {
+  font-family: 'Lexend', monospace !important;
 }
 
 a:focus:not(:focus-visible), button:focus:not(:focus-visible) {
